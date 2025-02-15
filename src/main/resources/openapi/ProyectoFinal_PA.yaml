@@ -1,0 +1,383 @@
+openapi: 3.0.0
+info:
+  title: Proyecto Final | Plataforma de Reportes Ciudadanos.
+  description:  Plataforma para que los ciudadanos reporten situaciones de riesgo o emergencia en su entorno. Los usuarios pueden registrarse, iniciar sesión, realizar reportes y comentar en los reportes de otros.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor local de desarrollo (Demo)
+
+tags:
+  - name: Usuario
+    description: Gestión de usuarios.
+  - name: Moderador
+    description: Administración de reportes
+  - name: Reporte
+    description: Gestión de reportes ciudadanos
+  - name: Comentarios
+    description: Comentarios en reportes
+  
+
+paths:
+# Apis del Usuario, con sus funcionalidades.
+  /usuario:
+    post:
+      summary: Crear / Registrar un nuevo usuario.
+      tags:
+        - Usuario
+      description: Registra un nuevo usuario en el sistema.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Usuario"
+      responses:
+        "201":
+          description: Usuario creado exitosamente
+        "400":
+          description: Error en los datos enviados
+
+  /usuario/{id}:
+    get:
+      summary: Obtener usuario por ID (Cedula)
+      tags:
+        - Usuario
+      description: Devuelve los datos de un usuario específico mediante su Id (Cedula)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID (Cedula) del usuario a obtener
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Datos del usuario obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Usuario"
+        "404":
+          description: Id del Usuario no encontrado
+
+  /usuario/{email}:
+    get:
+      summary: Obtener usuario por Email
+      tags:
+        - Usuario
+      description: Devuelve los datos de un usuario específico mediante su Email
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: Email del usuario a obtener
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Datos del usuario obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Usuario"
+        "404":
+          description: Email del Usuario no encontrado
+          
+  /usuario/update/{id}/{email}:
+    put:
+      summary: Actualizar usuario
+      tags:
+        - Usuario
+      description: Modifica los datos de un usuario existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id (Cedula) del usuario a actualizar
+          schema:
+            type: string
+        - name: email
+          in: path
+          description: Email del usuario a actualizar
+          schema:
+            type: string
+        - name: password
+          in: path
+          required: true
+          description: Password del usuario a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Usuario"
+      responses:
+        "200":
+          description: Usuario actualizado exitosamente
+        "404":
+          description: Usuario no encontrado
+
+  /usuario/delete/{id}:
+    delete:
+      summary: Eliminar usuario
+      tags:
+        - Usuario
+      description: Borra un usuario del sistema
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id (Cedula) del usuario a eliminar
+          schema:
+            type: integer
+        - name: password
+          in: path
+          required: true
+          description: Password del usuario a eliminar
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Usuario eliminado exitosamente
+        "404":
+          description: Usuario no encontrado
+
+  /usuario/login:
+    post:
+      summary: Iniciar sesión
+      tags:
+        - Usuario
+      description: Verifica las credenciales del usuario y devuelve un token de sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        "401":
+          description: Credenciales incorrectas        
+
+  /usuario/{email}/mensaje:
+    post:
+      summary: Enviar mensaje a otro usuario
+      tags:
+        - Usuario
+      description: Permite a un usuario enviar un mensaje a otro usuario del sistema
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: username del usuario destinatario
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MensajeRequest"
+      responses:
+        "200":
+          description: Mensaje enviado exitosamente
+        "404":
+          description: Usuario destinatario no encontrado
+
+# Apis del Moderador, con sus funcionalidades.
+  /moderadores/verificar-reporte/{id}:
+    put:
+      summary: Verificar un reporte
+      tags:
+        - Moderador
+      description: Permite a un moderador verificar la autenticidad de un reporte
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id del reporte
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reporte"
+      responses:
+        "200":
+          description: Reporte verificado exitosamente
+        "404":
+          description: Reporte no encontrado
+  
+
+  /usuarios/enviar-codigo:
+    post:
+      summary: Enviar código de activación
+      description: Envía un código de activación al correo del usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsuarioEmail"
+      responses:
+        "200":
+          description: Código enviado exitosamente
+        "400":
+          description: Error en el envío del código
+
+  /usuarios/activar:
+    post:
+      summary: Activar cuenta de usuario
+      description: Activa la cuenta de un usuario usando el código recibido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivacionRequest"
+      responses:
+        "200":
+          description: Cuenta activada exitosamente
+        "400":
+          description: Código incorrecto o expirado
+
+ 
+
+components:
+  schemas: # Esquemas para las APIs del usuario.
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1001330212"
+        nombre:
+          type: string
+          example: "Nicolas Cabrera"
+        direccion:
+          type: string
+          example: "Calle 5 norte"
+        estado:
+          type: string
+          enum: ["Activo", "Inactivo"]
+          example: "Activo"
+        user:
+          type: object
+          properties:
+            rol:
+              type: string
+              enum: [ "Moderador","Usuario","Megatron"]
+            password:
+              type: string
+              example: "nicolas1001"
+            email:
+              type: string
+              example: "nicolasC@example.com"
+
+    #Esquema del reporte.
+    Reporte:
+      type: object
+      properties:
+       Id:
+        type: integer
+        format: id
+        example: 350
+      username:
+        type: string
+        example: "nicolas2810"
+      titulo:
+        type: string
+        example: "Reporte de Nicolas"
+      categoria:
+        type: string
+        enum: ["seguridad","emergencia médica","infraestructura","mascotas","comunidad"]
+        example: "seguridad"
+      descripcion:
+        type: string
+        format: descripcion
+        example: "Problemas de robos y violencia"
+      ubicacion:
+        type: object
+        properties:
+          latitud:
+            type: number
+            format: float
+            example: -34.6037
+          longitud:
+            type: number
+            format: float
+            example: -58.3816
+      foto:
+         type: string
+         format: uri
+         example: "https://example.com/foto-reporte.jpg"
+      
+
+        
+
+    LoginRequest:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            username:
+              type: string
+              example: "nicolas123"
+            password:
+              type: string
+              format: password  
+              example: "nicolas1001"
+            email:
+              type: string
+              format: email
+              example: "nicolasC@example.com"
+      required: 
+        - password
+        - email
+          
+    MensajeRequest:
+      type: object
+      properties:
+        Email del remitente:
+          type: string
+          example: "nicolas2810"
+        contenido:
+          type: string
+          example: "Hola, ¿cómo está my dog?"
+  
+
+
+    UsuarioEmail:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "juan@example.com"
+
+    ActivacionRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "juan@example.com"
+        codigo:
+          type: string
+          example: "123456"
+
+    
