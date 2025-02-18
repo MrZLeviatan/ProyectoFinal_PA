@@ -19,5 +19,6 @@ public class Reporte {
     private String idUsuario,idReporte;
     private Ubicacion ubicacion;
 
+    //imagenes
 
 }
