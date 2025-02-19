@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Proyecto Final | Plataforma de Reportes Ciudadanos.
-  description:  Plataforma para que los ciudadanos reporten situaciones de riesgo o emergencia en su entorno. Los usuarios pueden registrarse, iniciar sesión, realizar reportes y comentar en los reportes de otros.
+  description: Plataforma para que los ciudadanos reporten situaciones de riesgo o emergencia en su entorno. Los usuarios pueden registrarse, iniciar sesión, realizar reportes y comentar en los reportes de otros.
   version: 1.0.0
 
 servers:
@@ -12,18 +12,18 @@ tags:
   - name: Usuario
     description: Gestión de usuarios.
   - name: Moderador
-    description: Administración de reportes
+    description: Gestión de moderadores.
   - name: Reporte
-    description: Gestión de reportes ciudadanos
+    description: Gestión de reportes
   - name: Comentarios
     description: Comentarios en reportes
-  
+
 
 paths:
 # Apis del Usuario, con sus funcionalidades.
   /usuario:
     post:
-      summary: Crear / Registrar un nuevo usuario.
+      summary: Registrar un nuevo usuario.
       tags:
         - Usuario
       description: Registra un nuevo usuario en el sistema.
@@ -35,9 +35,27 @@ paths:
               $ref: "#/components/schemas/Usuario"
       responses:
         "201":
-          description: Usuario creado exitosamente
+          description: Usuario registrado exitosamente. Código de activación enviado.
         "400":
           description: Error en los datos enviados
+
+  /usuario/activate:
+    post:
+      summary: Activación de cuenta
+      tags:
+        - Usuario
+      description: Activa la cuenta de un usuario mediante el código enviado por correo. Este código es válido por 15 minutos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivaciónCuentaRequest"
+      responses:
+        '200':
+          description: Cuenta activada exitosamente.
+        '400':
+          description: Código invalido o expirado.
 
   /usuario/{id}:
     get:
@@ -84,8 +102,8 @@ paths:
                 $ref: "#/components/schemas/Usuario"
         "404":
           description: Email del Usuario no encontrado
-          
-  /usuario/update/{id}/{email}:
+
+  /usuario/{id}/{email}/update:
     put:
       summary: Actualizar usuario
       tags:
@@ -119,7 +137,7 @@ paths:
         "404":
           description: Usuario no encontrado
 
-  /usuario/delete/{id}:
+  /usuario/{id}/delete:
     delete:
       summary: Eliminar usuario
       tags:
@@ -131,7 +149,7 @@ paths:
           required: true
           description: Id (Cedula) del usuario a eliminar
           schema:
-            type: integer
+            type: string
         - name: password
           in: path
           required: true
@@ -144,12 +162,13 @@ paths:
         "404":
           description: Usuario no encontrado
 
-  /usuario/login:
+  /login:
     post:
       summary: Iniciar sesión
       tags:
         - Usuario
-      description: Verifica las credenciales del usuario y devuelve un token de sesión
+        - Moderador
+      description: Verifica las credenciales del Usuario/Moderador y devuelve un token de sesión
       requestBody:
         required: true
         content:
@@ -166,36 +185,258 @@ paths:
                 properties:
                   token:
                     type: string
+                    # Buena práctica ante la seguridad sel sitio web.
                     example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         "401":
-          description: Credenciales incorrectas        
+          description: Credenciales incorrectas
 
-  /usuario/{email}/mensaje:
-    post:
-      summary: Enviar mensaje a otro usuario
+#Apis del reporte, con sus funcionalidades.
+  /reporte:
+    get:
+      summary: Obtener todos los reportes de la plataforma.
       tags:
-        - Usuario
-      description: Permite a un usuario enviar un mensaje a otro usuario del sistema
+        - Reporte
+      description: Permite obtener todos los reportes registrados en la plataforma,
+      responses:
+        '200':
+          description: Lista de reportes obtenida.
+
+  /reporte/{id}:
+    get:
+      summary: Obtener el reporte mediante su id.
+      tags:
+        - Reporte
+      description: Devuelve los datos de un reporte mediante su Id.
       parameters:
-        - name: username
+        - name: id
           in: path
           required: true
-          description: username del usuario destinatario
+          description: Id del reporte a obtener
           schema:
-            type: string
+            type: integer
+      responses:
+        "200":
+          description: Datos del reporte obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reporte"
+        "404":
+          description: Id del reporte no encontrado
+
+  /reporte/usuario:
+    post:
+      summary: Usuario registra un reporte.
+      tags:
+        - Reporte
+      description: Un usuario registra un reporte.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MensajeRequest"
+              $ref: "#/components/schemas/Reporte"
+      responses:
+        "201":
+          description: Registro del reporte exitoso.
+        "400":
+          description: Error en los datos enviados
+
+  /reporte/{id}/usuario/update:
+    put:
+      summary: Editar reporte
+      tags:
+        - Reporte
+      description: Modificar los datos de un reporte
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id del reporte ah actualizar.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reporte"
       responses:
         "200":
-          description: Mensaje enviado exitosamente
+          description: Reporte actualizado exitosamente
         "404":
-          description: Usuario destinatario no encontrado
+          description: Reporte no encontrado
 
-# Apis del Moderador, con sus funcionalidades.
+
+  /reporte/{id}/usuario/delete:
+    delete:
+      summary: Eliminar reporte
+      tags:
+        - Reporte
+      description: Borra un reporte del usuario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id del reporte a eliminar
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Reporte eliminado exitosamente
+        "404":
+          description: Reporte no encontrado
+
+  /reporte/{id}/importante:
+    post:
+      summary: Marcar un reporte como importante
+      tags:
+        - Reporte
+      description: Permite a los usuarios calificar un reporte como importante para priorizar según su veracidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Reporte marcado como importante exitosamente.
+        '400':
+          description: Error de solicitud.
+
+  /reporte/{id}/resuelto:
+    post:
+      summary: Marca un reporte como resuelto.
+      tags:
+        - Reporte
+      description: Permite al usuario cambiar el estado de su reporte a 'Resuelto' cuando lo considere.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Reporte marcado como resuelto exitosamente.
+        '404':
+          description: Reporte no encontrado
+        '400':
+          description: Error de solicitud.
+
+
+  /reporte/usuario/{idUsuario}:
+    get:
+      summary: Obtener reporte de un usuario especifico.
+      tags:
+        - Reporte
+      description: Devuelve una lista de reportes asociado a un usuario en particular.
+      parameters:
+        - name: idUsuario
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de reportes del usuario obtenido exitosamente.
+
+
+#Apis de los comentarios
+  /reporte/{id}/usuario/comentario:
+    post:
+      summary: Agregar un comentario a un reporte.
+      tags:
+        - Reporte
+        - Comentarios
+      description: Permite a los usuarios agregar comentarios a un reporte especifico.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Comentario"
+      responses:
+        '201':
+          description: Respuesta agregada exitosamente al comentario.
+        '400':
+          description: Error en los datos de entrada.
+
+  /comentario/{id}/usuario/respuesta:
+    post:
+      summary: Agrega una respuesta a un comentario.
+      tags:
+        - Comentarios
+      description: Permite a los usuarios agregar respuestas a un comentario específico.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Comentario"
+      responses:
+        '201':
+          description: Respuesta agregada exitosamente al comentario.
+        '400':
+          description: Error datos de entrada.
+
+  /comentario/{id}/update:
+    put:
+      summary: Actualizar comentario.
+      tags:
+        - Comentarios
+      description: Modifica los datos de un comentario existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id del comentario ah actualizar
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Comentario"
+      responses:
+        "200":
+          description: Comentario actualizado exitosamente
+        "404":
+          description: Comentario no encontrado
+
+  /comentario/{id}/delete:
+    delete:
+      summary: Eliminar un comentario y sus respuestas
+      tags:
+        - Comentarios
+      description: Permite a los usuarios eliminar un comentario. Si el comentario tiene respuestas, también serán eliminadas.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Comentario eliminado correctamente junto a sus respuestas,
+        '400':
+          description: Error de solicitud.
+
+#Apis del Moderador, con sus funcionalidades.
   /moderadores/verificar-reporte/{id}:
     put:
       summary: Verificar un reporte
@@ -220,44 +461,11 @@ paths:
           description: Reporte verificado exitosamente
         "404":
           description: Reporte no encontrado
-  
 
-  /usuarios/enviar-codigo:
-    post:
-      summary: Enviar código de activación
-      description: Envía un código de activación al correo del usuario
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UsuarioEmail"
-      responses:
-        "200":
-          description: Código enviado exitosamente
-        "400":
-          description: Error en el envío del código
-
-  /usuarios/activar:
-    post:
-      summary: Activar cuenta de usuario
-      description: Activa la cuenta de un usuario usando el código recibido
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ActivacionRequest"
-      responses:
-        "200":
-          description: Cuenta activada exitosamente
-        "400":
-          description: Código incorrecto o expirado
-
- 
 
 components:
-  schemas: # Esquemas para las APIs del usuario.
+  schemas:
+# Esquemas para las API's del usuario.
     Usuario:
       type: object
       properties:
@@ -267,19 +475,20 @@ components:
         nombre:
           type: string
           example: "Nicolas Cabrera"
-        direccion:
+        dirección:
           type: string
           example: "Calle 5 norte"
         estado:
           type: string
-          enum: ["Activo", "Inactivo"]
-          example: "Activo"
+          enum: [ "Activo","Inactivo" ]
+          example: "Inactivo"
         user:
           type: object
           properties:
             rol:
               type: string
-              enum: [ "Moderador","Usuario","Megatron"]
+              enum: [ "Moderador","Usuario","Megatron" ]
+              example: "Usuario"
             password:
               type: string
               example: "nicolas1001"
@@ -287,46 +496,91 @@ components:
               type: string
               example: "nicolasC@example.com"
 
-    #Esquema del reporte.
+#Esquema del reporte.
     Reporte:
       type: object
       properties:
-       Id:
-        type: integer
-        format: id
-        example: 350
-      username:
-        type: string
-        example: "nicolas2810"
-      titulo:
-        type: string
-        example: "Reporte de Nicolas"
-      categoria:
-        type: string
-        enum: ["seguridad","emergencia médica","infraestructura","mascotas","comunidad"]
-        example: "seguridad"
-      descripcion:
-        type: string
-        format: descripcion
-        example: "Problemas de robos y violencia"
-      ubicacion:
-        type: object
-        properties:
-          latitud:
-            type: number
-            format: float
-            example: -34.6037
-          longitud:
-            type: number
-            format: float
-            example: -58.3816
-      foto:
-         type: string
-         format: uri
-         example: "https://example.com/foto-reporte.jpg"
-      
+        Id:
+          type: integer
+          format: id
+          example: 350
+        IdUsuario:
+          type: string
+          example: "1001330212"
+        titulo:
+          type: string
+          example: "Reporte de Nicolas"
+        categoría:
+          type: string
+          enum: [ "seguridad","emergencia médica","infraestructura","mascotas","comunidad" ]
+          example: "seguridad"
+        estaResuelto:
+          type: boolean
+          example: false
+        descripción:
+          type: string
+          format: descripción
+          example: "Problemas de robos y violencia"
+        estaVerificación:
+          type: boolean
+          example: false
+        ubicación:
+          type: object
+          properties:
+            latitud:
+              type: number
+              format: float
+              example: -34.6037
+            longitud:
+              type: number
+              format: float
+              example: -58.3816
+        foto:
+          type: string
+          format: uri
+          example: "https://example.com/foto-reporte.jpg"
+        numImportancia:
+          type: integer
+          example: 0
+        comentarios:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/Comentario'
 
-        
+#Esquema de los comentarios.
+    Comentario:
+      type: object
+      properties:
+        idComentario:
+          type: integer
+          example: 101
+        idUsuario:
+          type: string
+          example: "1001330212"
+        comentario:
+          type: string
+          example: "Tu comentario es pura falsedad"
+        fecha:
+          type: string
+          format: data-time
+          example: "2025-02-18T14:30:00Z"
+        comentarios:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/Comentario'
+
+
+    ActivaciónCuentaRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        código:
+          type: string
+          example: "QR92"
 
     LoginRequest:
       type: object
@@ -334,32 +588,17 @@ components:
         user:
           type: object
           properties:
-            username:
-              type: string
-              example: "nicolas123"
             password:
               type: string
-              format: password  
+              format: password
               example: "nicolas1001"
             email:
               type: string
               format: email
               example: "nicolasC@example.com"
-      required: 
+      required:
         - password
         - email
-          
-    MensajeRequest:
-      type: object
-      properties:
-        Email del remitente:
-          type: string
-          example: "nicolas2810"
-        contenido:
-          type: string
-          example: "Hola, ¿cómo está my dog?"
-  
-
 
     UsuarioEmail:
       type: object
@@ -369,15 +608,3 @@ components:
           format: email
           example: "juan@example.com"
 
-    ActivacionRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-          example: "juan@example.com"
-        codigo:
-          type: string
-          example: "123456"
-
-    
