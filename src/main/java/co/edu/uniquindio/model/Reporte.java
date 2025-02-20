@@ -16,7 +16,7 @@ public class Reporte {
     private Categoria categoria;
     private List<Comentario> comentarios;
     private boolean isVerificado;
-    private String idUsuario,idReporte;
+    private String idUsuario,idReporte,Titulo;
     private Ubicacion ubicacion;
 
     //imagenes
