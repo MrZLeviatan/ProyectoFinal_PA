@@ -529,7 +529,34 @@ paths:
         '200':
           description: Reporte rechazado exitosamente y el usuario tiene 5 días para corregirlo.
 
-  /moderador/reportes/generar-informe:
+  /moderator/reports/generate-report:
+    get:
+      summary: Generar informe de reportes
+      tags:
+        - Moderador
+      description: Permite a los moderadores generar informes de reportes filtrados por sector, categoría y período de tiempo. El informe puede visualizarse en la web y descargarse en PDF.
+      parameters:
+        - name: sector
+          in: query
+          schema:
+            type: string
+        - name: categoria
+          in: query
+          schema:
+            type: string
+        - name: fecha_inicio
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: fecha_fin
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Informe generado exitosamente con una lista de reportes.
 
 
 
@@ -558,6 +585,40 @@ paths:
         "401":
           description: Credenciales incorrectas
 
+  /nofiticaciones:
+    get:
+      summary: Obtener notificaciones de usuario
+      description: Devuelve la lista de notificaciones del usuario, incluyendo reportes nuevos en su zona.
+      responses:
+        '200':
+          description: Lista de notificaciones obtenida exitosamente.
+
+    post:
+        summary: Enviar notificación a un usuario
+        description: Envia una notificación en tiempo real a un usuario usando WebSockets o Firebase Cloud Messaging.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationRequest'
+        responses:
+          '200':
+            description: Notificación enviada exitosamente.
+
+  /notifications/{id}:
+    get:
+      summary: Obtener el detalle de una notificación
+      description: Devuelve la información completa de una notificación, incluyendo comentarios y detalles del reporte relacionado.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalle de la notificación obtenido exitosamente.
 
 components:
   schemas:
@@ -716,4 +777,16 @@ components:
         motivo:
           type: string
           example: "Falta de evidencia en el reporte."
+
+
+    NotificationRequest:
+      type: object
+      properties:
+        usuarioId:
+          type: integer
+          example: 123
+        mensaje:
+          type: string
+          example: "Nuevo reporte de robo en tu zona."
+
 
