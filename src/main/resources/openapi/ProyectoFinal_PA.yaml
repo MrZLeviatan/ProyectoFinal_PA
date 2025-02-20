@@ -162,33 +162,6 @@ paths:
         "404":
           description: Usuario no encontrado
 
-  /login:
-    post:
-      summary: Iniciar sesión
-      tags:
-        - Usuario
-        - Moderador
-      description: Verifica las credenciales del Usuario/Moderador y devuelve un token de sesión
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/LoginRequest"
-      responses:
-        "200":
-          description: Login exitoso
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                    # Buena práctica ante la seguridad sel sitio web.
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        "401":
-          description: Credenciales incorrectas
 
 #Apis del reporte, con sus funcionalidades.
   /reporte:
@@ -310,7 +283,7 @@ paths:
       summary: Marca un reporte como resuelto.
       tags:
         - Reporte
-      description: Permite al usuario cambiar el estado de su reporte a 'Resuelto' cuando lo considere.
+      description: Permite al Usuario/Moderador cambiar el estado de su reporte a 'Resuelto' cuando lo considere.
       parameters:
         - name: id
           in: path
@@ -328,7 +301,7 @@ paths:
 
   /reporte/usuario/{idUsuario}:
     get:
-      summary: Obtener reporte de un usuario especifico.
+      summary: Obtener reportes de un usuario especifico.
       tags:
         - Reporte
       description: Devuelve una lista de reportes asociado a un usuario en particular.
@@ -369,7 +342,7 @@ paths:
         '400':
           description: Error en los datos de entrada.
 
-  /comentario/{id}/usuario/respuesta:
+  /comentario/{id}/respuesta:
     post:
       summary: Agrega una respuesta a un comentario.
       tags:
@@ -437,17 +410,113 @@ paths:
           description: Error de solicitud.
 
 #Apis del Moderador, con sus funcionalidades.
-  /moderadores/verificar-reporte/{id}:
+
+  /moderador/{id}:
     put:
-      summary: Verificar un reporte
+      summary: Actualiza la cuenta del propio Moderador.
       tags:
         - Moderador
-      description: Permite a un moderador verificar la autenticidad de un reporte
+      description: Permite al moderador actualizar los datos de su propia cuenta.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+      responses:
+        '200':
+          description: Moderador actualizado exitosamente
+        '404':
+          description: Moderador no encontrado
+        '400':
+          description: Error en los datos enviados.
+
+    delete:
+      summary: Elimina la cuenta del propio Moderador.
+      tags:
+        - Moderador
+      description: Permite al moderador eliminar su propia cuenta.
       parameters:
         - name: id
           in: path
           required: true
-          description: Id del reporte
+          description: Id (Cedula) del moderador a eliminar
+          schema:
+            type: string
+        - name: password
+          in: path
+          required: true
+          description: Password del moderador a eliminar
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Moderador eliminado exitosamente
+        "404":
+          description: Moderador no encontrado
+
+  /moderador/categorias:
+    post:
+      summary: Crear una nueva categoría de reporte
+      tags:
+        - Moderador
+      description: Permite a los moderadores agregar nuevas categorías de reportes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '201':
+          description: Categoría creada exitosamente.
+    get:
+      summary: Obtener todas las categorías
+      tags:
+        - Moderador
+      description: Permite a los moderadores ver las categorías de reportes existentes.
+      responses:
+        '200':
+          description: Categorías obtenidas exitosamente.
+    delete:
+      summary: Eliminar una categoría
+      tags:
+        - Moderador
+      description: Permite a los moderadores eliminar una categoría específica.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Categoría eliminada exitosamente.
+    put:
+      summary: Actualizar una categoría
+      tags:
+        - Moderador
+      description: Permite actualizar los datos de una categoría
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '201':
+          description: Categoría actualizada exitosamente.
+
+  /moderador/reporte/{id}/respuesta:
+    put:
+      summary: Rechazar un reporte
+      tags:
+        - Moderador
+      description: Permite a los moderadores rechazar un reporte con una razón específica.
+      parameters:
+        - name: id
+          in: path
+          required: true
           schema:
             type: integer
       requestBody:
@@ -455,12 +524,39 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Reporte"
+              $ref: '#/components/schemas/RejectReportRequest'
+      responses:
+        '200':
+          description: Reporte rechazado exitosamente y el usuario tiene 5 días para corregirlo.
+
+  /moderador/reportes/generar-informe:
+
+
+
+  /login:
+    post:
+      summary: Iniciar sesión
+      description: Verifica las credenciales del Usuario/Moderador y devuelve un token de sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
       responses:
         "200":
-          description: Reporte verificado exitosamente
-        "404":
-          description: Reporte no encontrado
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    # Buena práctica ante la seguridad sel sitio web.
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        "401":
+          description: Credenciales incorrectas
 
 
 components:
@@ -475,7 +571,7 @@ components:
         nombre:
           type: string
           example: "Nicolas Cabrera"
-        dirección:
+        direccion:
           type: string
           example: "Calle 5 norte"
         estado:
@@ -510,21 +606,21 @@ components:
         titulo:
           type: string
           example: "Reporte de Nicolas"
-        categoría:
+        categoria:
           type: string
           enum: [ "seguridad","emergencia médica","infraestructura","mascotas","comunidad" ]
           example: "seguridad"
         estaResuelto:
           type: boolean
           example: false
-        descripción:
+        descripcion:
           type: string
           format: descripción
           example: "Problemas de robos y violencia"
-        estaVerificación:
+        estaVerificacion:
           type: boolean
           example: false
-        ubicación:
+        ubicacion:
           type: object
           properties:
             latitud:
@@ -571,7 +667,6 @@ components:
           items:
             $ref: '#/components/schemas/Comentario'
 
-
     ActivaciónCuentaRequest:
       type: object
       properties:
@@ -607,4 +702,18 @@ components:
           type: string
           format: email
           example: "juan@example.com"
+
+    CategoryRequest:
+       type: object
+       properties:
+        nombre:
+          type: string
+          example: "Mascotas"
+
+    RejectReportRequest:
+      type: object
+      properties:
+        motivo:
+          type: string
+          example: "Falta de evidencia en el reporte."
 
