@@ -18,6 +18,8 @@ public class Reporte {
     private boolean isVerificado;
     private String idUsuario,idReporte,Titulo;
     private Ubicacion ubicacion;
+    private List<HistorialEstado> historial;
+
 
     //imagenes
 

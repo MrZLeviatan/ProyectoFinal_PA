@@ -10,23 +10,33 @@ servers:
 
 tags:
   - name: Usuario
-    description: Gestión de usuarios.
+    description: | 
+      API para la gestión de usuarios: autenticación, registro, actualización de perfil, manejo de reportes, favoritos y notificaciones.
   - name: Moderador
-    description: Gestión de moderadores.
+    description: |
+      API exclusiva para moderadores con permisos avanzados para gestionar reportes, usuarios, comentarios y notificaciones.
   - name: Reporte
-    description: Gestión de reportes
+    description: |
+      API para la creación, actualización y gestión de reportes, incluyendo su clasificación, estado (importante/resuelto) y moderación.
   - name: Comentarios
-    description: Comentarios en reportes
+    description: |
+      API para la gestión de comentarios en reportes: creación, edición, eliminación y moderación.
+  - name: Notificaciones
+    description: |
+      API para el envío y gestión de notificaciones mediante WebSockets, FCM y correo electrónico, con soporte para filtrado y estados (leída/no leída).
 
 
 paths:
 # Apis del Usuario, con sus funcionalidades.
-  /usuario:
+  /api/usuarios:
     post:
       summary: Registrar un nuevo usuario.
       tags:
         - Usuario
-      description: Registra un nuevo usuario en el sistema.
+      description: |
+        Registra un nuevo usuario en el sistema.
+        - Se valida que el correo y el ID no estén repetidos, y que todos los campos sean obligatorios.
+        - Se obtiene la ubicación a partir de un mapa interactivo. (Se recomienda usar Mapbox para obtener la ubicación exacta.)
       requestBody:
         required: true
         content:
@@ -37,39 +47,110 @@ paths:
         "201":
           description: Usuario registrado exitosamente. Código de activación enviado.
         "400":
-          description: Error en los datos enviados
+          description: Error en los datos enviados - Datos faltantes o incorrectos,
+        "409":
+          description: Conflicto - Email o ID ya existen.
 
-  /usuario/activate:
-    post:
-      summary: Activación de cuenta
+  /api/usuarios/{id}:
+    put:
+      summary: Actualizar usuario
       tags:
         - Usuario
-      description: Activa la cuenta de un usuario mediante el código enviado por correo. Este código es válido por 15 minutos.
+        - Moderador
+      description: | 
+        Modifica los datos de un usuario existente. 
+        - Solo el propietario de la cuenta o un moderador pueden realizar esta acción.
+        - Se pueden actualizar la dirección y la ubicación geográfica (latitud y longitud) usando Mapbox.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id del usuario a actualizar
+          schema:
+            type: string
+      security:
+        - cookieAuth: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ActivaciónCuentaRequest"
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  example: "Nuevo Nombre"
+                ciudad:
+                  type: string
+                  example: "Nueva Ciudad"
+                direccion:
+                  type: string
+                  example: "Nueva direccion"
+                ubicacion:
+                  $ref: '#/components/schemas/Ubicacion'
       responses:
-        '200':
-          description: Cuenta activada exitosamente.
-        '400':
-          description: Código invalido o expirado.
+        "200":
+          description: Usuario actualizado exitosamente
+        "400":
+          description: Error en los datos enviados. Algún campo es inválido o está vacío.
+        "401":
+          description: No autorizado (cookie o token inválido)
+        "403":
+            description: Acceso prohibido (ID no coincide con el autenticado)
+        "404":
+          description: Usuario no encontrado
 
-  /usuario/{id}:
-    get:
-      summary: Obtener usuario por ID (Cedula)
+    delete:
+      summary: Eliminar usuario
       tags:
         - Usuario
-      description: Devuelve los datos de un usuario específico mediante su Id (Cedula)
+        - Moderador
+      description: | 
+       Borra un usuario del sistema. Solo los administradores o el propio usuario pueden eliminar la cuenta.
       parameters:
         - name: id
           in: path
           required: true
-          description: ID (Cedula) del usuario a obtener
+          description: Id del usuario a eliminar
           schema:
             type: string
+      security:
+        - cookieAuth: [ ]
+      responses:
+        "204":
+          description: Usuario eliminado exitosamente
+        "202":
+          description: La solicitud fue recibida, pero la eliminación se procesará más tarde (caso de procesamiento asíncrono).
+        "400":
+          description: El id es inválido o la solicitud está malformada.
+        "401":
+          description: No se envió token o cookie de autenticación, o es inválido.
+        "403":
+          description: Acceso prohibido (ID no coincide con el autenticado)
+        "404":
+          description: Usuario no encontrado
+        "500":
+          description: Fallo en la base de datos o en el servidor.
+        "502":
+          description: El servidor no puede comunicarse con otro servicio necesario.
+
+    get:
+      summary: Obtener usuario por ID
+      tags:
+        - Usuario
+        - Moderador
+      description: |
+        Devuelve los datos de un usuario específico mediante su ID. 
+        Solo el propio usuario o un moderador pueden acceder a esta información.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del usuario a obtener
+          schema:
+            type: string
+      security:
+        - cookieAuth: [ ]
       responses:
         "200":
           description: Datos del usuario obtenidos exitosamente
@@ -77,15 +158,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Usuario"
+        "400":
+          description: Solicitud incorrecta (ID inválido).
+        "401":
+            description: No autorizado (cookie faltante o inválida).
+        "403":
+            description: Acceso prohibido (el usuario autenticado no coincide con el ID).
         "404":
-          description: Id del Usuario no encontrado
+            description: Usuario no encontrado.
+        "500":
+            description: Error interno del servidor.
 
-  /usuario/{email}:
+  /api/usuarios/{email}:
     get:
       summary: Obtener usuario por Email
       tags:
         - Usuario
-      description: Devuelve los datos de un usuario específico mediante su Email
+        - Moderador
+      description: | 
+        Devuelve los datos de un usuario específico mediante su Email. 
+        Solo el propio usuario o un moderador pueden acceder a esta información.
       parameters:
         - name: email
           in: path
@@ -93,6 +185,10 @@ paths:
           description: Email del usuario a obtener
           schema:
             type: string
+            format: email
+            pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' # Validación de formato de email
+      security:
+        - cookieAuth: [ ]
       responses:
         "200":
           description: Datos del usuario obtenidos exitosamente
@@ -100,470 +196,124 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Usuario"
+        "400":
+          description: Solicitud incorrecta (Email invalido).
+        "401":
+          description: No autorizado (cookie faltante o inválida).
+        "403":
+          description: Acceso prohibido (el usuario autenticado no coincide con el email).
         "404":
-          description: Email del Usuario no encontrado
+          description: Usuario no encontrado.
+        "500":
+          description: Error interno del servidor.
 
-  /usuario/{id}/{email}/update:
-    put:
-      summary: Actualizar usuario
+    post:
+      summary: "Solicitar recuperación de contraseña"
       tags:
         - Usuario
-      description: Modifica los datos de un usuario existente
+        - Moderador
+      description: |
+        Permite a un usuario o moderador solicitar la recuperación de su contraseña.  
+        Se envía un correo con un enlace seguro para restablecerla.  
+            - **Si el email está registrado**, el sistema enviará un correo con instrucciones.  
+            - **Si el email no está registrado**, se devuelve un error `400` para evitar ataques de enumeración.
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: Id (Cedula) del usuario a actualizar
-          schema:
-            type: string
         - name: email
           in: path
-          description: Email del usuario a actualizar
+          required: true
+          description: Email del usuario / moderador a recuperar su contraseña
           schema:
             type: string
-        - name: password
-          in: path
-          required: true
-          description: Password del usuario a actualizar
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Usuario"
+            format: email
+            pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' # Validación de formato de email.
       responses:
-        "200":
-          description: Usuario actualizado exitosamente
-        "404":
-          description: Usuario no encontrado
+        200:
+          description: "Correo enviado con instrucciones para recuperar la contraseña."
+        400:
+          description: "Solicitud inválida o email no registrado."
+        "429":
+          description: Demasiadas solicitudes (Rate Limit Exceeded).
+        500:
+          description: "Error en el servidor."
 
-  /usuario/{id}/delete:
-    delete:
-      summary: Eliminar usuario
+  /api/usuarios/password:
+    post:
+      summary: "Restablecer contraseña"
       tags:
         - Usuario
-      description: Borra un usuario del sistema
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Id (Cedula) del usuario a eliminar
-          schema:
-            type: string
-        - name: password
-          in: path
-          required: true
-          description: Password del usuario a eliminar
-          schema:
-            type: string
-      responses:
-        "204":
-          description: Usuario eliminado exitosamente
-        "404":
-          description: Usuario no encontrado
-
-
-#Apis del reporte, con sus funcionalidades.
-  /reporte:
-    get:
-      summary: Obtener todos los reportes de la plataforma.
-      tags:
-        - Reporte
-      description: Permite obtener todos los reportes registrados en la plataforma,
-      responses:
-        '200':
-          description: Lista de reportes obtenida.
-
-  /reporte/{id}:
-    get:
-      summary: Obtener el reporte mediante su id.
-      tags:
-        - Reporte
-      description: Devuelve los datos de un reporte mediante su Id.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Id del reporte a obtener
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Datos del reporte obtenidos exitosamente
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Reporte"
-        "404":
-          description: Id del reporte no encontrado
-
-  /reporte/usuario:
-    post:
-      summary: Usuario registra un reporte.
-      tags:
-        - Reporte
-      description: Un usuario registra un reporte.
+        - Moderador
+      description: | 
+        Permite al usuario / moderador establecer una nueva contraseña si ingresa un código válido recibido en su email.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Reporte"
+              $ref: "#/components/schemas/ResetPasswordRequest"
       responses:
-        "201":
-          description: Registro del reporte exitoso.
+        200:
+          description: "Contraseña actualizada correctamente."
+        400:
+          description: "Código inválido o expirado."
+        "403":
+          description: "Acceso prohibido. Código de recuperación ya utilizado o no tiene permisos."
+        "410":
+          description: "Código de recuperación expirado. Solicite uno nuevo."
+        500:
+          description: "Error en el servidor."
+
+  /api/usuarios/activacion-cuenta:
+    post:
+      summary: Activación de cuenta
+      tags:
+        - Usuario
+      description: | 
+        Activa la cuenta de un usuario mediante el código enviado por correo. 
+        Este código es válido por 15 minutos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Id (Cedula) del usuario
+                codigo:
+                  type: string
+                  description: Codigo de activacion enviado por correo
+                  example: QRZ3
+                  pattern: "^[A-Za-z0-9]{4,10}$"
+              required:
+                - id
+                - codigo
+      responses:
+        "200":
+          description: Cuenta activada exitosamente
         "400":
-          description: Error en los datos enviados
-
-  /reporte/{id}/usuario/update:
-    put:
-      summary: Editar reporte
-      tags:
-        - Reporte
-      description: Modificar los datos de un reporte
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Id del reporte ah actualizar.
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Reporte"
-      responses:
-        "200":
-          description: Reporte actualizado exitosamente
+            description: Solicitud incorrecta (faltan datos o formato inválido)
+        "401":
+            description: Código incorrecto
+        "403":
+            description: Código expirado, solicita uno nuevo
         "404":
-          description: Reporte no encontrado
+            description: Usuario no encontrado
+        "410":
+          description: "Código de activación expirado. Solicita uno nuevo."
+        "429":
+            description: Demasiados intentos, intenta más tarde
+        "500":
+            description: Error interno del servidor
 
-
-  /reporte/{id}/usuario/delete:
-    delete:
-      summary: Eliminar reporte
-      tags:
-        - Reporte
-      description: Borra un reporte del usuario
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Id del reporte a eliminar
-          schema:
-            type: integer
-      responses:
-        "204":
-          description: Reporte eliminado exitosamente
-        "404":
-          description: Reporte no encontrado
-
-  /reporte/{id}/importante:
-    post:
-      summary: Marcar un reporte como importante
-      tags:
-        - Reporte
-      description: Permite a los usuarios calificar un reporte como importante para priorizar según su veracidad
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Reporte marcado como importante exitosamente.
-        '400':
-          description: Error de solicitud.
-
-  /reporte/{id}/resuelto:
-    post:
-      summary: Marca un reporte como resuelto.
-      tags:
-        - Reporte
-      description: Permite al Usuario/Moderador cambiar el estado de su reporte a 'Resuelto' cuando lo considere.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Reporte marcado como resuelto exitosamente.
-        '404':
-          description: Reporte no encontrado
-        '400':
-          description: Error de solicitud.
-
-
-  /reporte/usuario/{idUsuario}:
-    get:
-      summary: Obtener reportes de un usuario especifico.
-      tags:
-        - Reporte
-      description: Devuelve una lista de reportes asociado a un usuario en particular.
-      parameters:
-        - name: idUsuario
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Lista de reportes del usuario obtenido exitosamente.
-
-
-#Apis de los comentarios
-  /reporte/{id}/usuario/comentario:
-    post:
-      summary: Agregar un comentario a un reporte.
-      tags:
-        - Reporte
-        - Comentarios
-      description: Permite a los usuarios agregar comentarios a un reporte especifico.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Comentario"
-      responses:
-        '201':
-          description: Respuesta agregada exitosamente al comentario.
-        '400':
-          description: Error en los datos de entrada.
-
-  /comentario/{id}/respuesta:
-    post:
-      summary: Agrega una respuesta a un comentario.
-      tags:
-        - Comentarios
-      description: Permite a los usuarios agregar respuestas a un comentario específico.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Comentario"
-      responses:
-        '201':
-          description: Respuesta agregada exitosamente al comentario.
-        '400':
-          description: Error datos de entrada.
-
-  /comentario/{id}/update:
-    put:
-      summary: Actualizar comentario.
-      tags:
-        - Comentarios
-      description: Modifica los datos de un comentario existente
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Id del comentario ah actualizar
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Comentario"
-      responses:
-        "200":
-          description: Comentario actualizado exitosamente
-        "404":
-          description: Comentario no encontrado
-
-  /comentario/{id}/delete:
-    delete:
-      summary: Eliminar un comentario y sus respuestas
-      tags:
-        - Comentarios
-      description: Permite a los usuarios eliminar un comentario. Si el comentario tiene respuestas, también serán eliminadas.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Comentario eliminado correctamente junto a sus respuestas,
-        '400':
-          description: Error de solicitud.
-
-#Apis del Moderador, con sus funcionalidades.
-
-  /moderador/{id}:
-    put:
-      summary: Actualiza la cuenta del propio Moderador.
-      tags:
-        - Moderador
-      description: Permite al moderador actualizar los datos de su propia cuenta.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Usuario'
-      responses:
-        '200':
-          description: Moderador actualizado exitosamente
-        '404':
-          description: Moderador no encontrado
-        '400':
-          description: Error en los datos enviados.
-
-    delete:
-      summary: Elimina la cuenta del propio Moderador.
-      tags:
-        - Moderador
-      description: Permite al moderador eliminar su propia cuenta.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Id (Cedula) del moderador a eliminar
-          schema:
-            type: string
-        - name: password
-          in: path
-          required: true
-          description: Password del moderador a eliminar
-          schema:
-            type: string
-      responses:
-        "204":
-          description: Moderador eliminado exitosamente
-        "404":
-          description: Moderador no encontrado
-
-  /moderador/categorias:
-    post:
-      summary: Crear una nueva categoría de reporte
-      tags:
-        - Moderador
-      description: Permite a los moderadores agregar nuevas categorías de reportes.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CategoryRequest'
-      responses:
-        '201':
-          description: Categoría creada exitosamente.
-    get:
-      summary: Obtener todas las categorías
-      tags:
-        - Moderador
-      description: Permite a los moderadores ver las categorías de reportes existentes.
-      responses:
-        '200':
-          description: Categorías obtenidas exitosamente.
-    delete:
-      summary: Eliminar una categoría
-      tags:
-        - Moderador
-      description: Permite a los moderadores eliminar una categoría específica.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Categoría eliminada exitosamente.
-    put:
-      summary: Actualizar una categoría
-      tags:
-        - Moderador
-      description: Permite actualizar los datos de una categoría
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CategoryRequest'
-      responses:
-        '201':
-          description: Categoría actualizada exitosamente.
-
-  /moderador/reporte/{id}/respuesta:
-    put:
-      summary: Rechazar un reporte
-      tags:
-        - Moderador
-      description: Permite a los moderadores rechazar un reporte con una razón específica.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RejectReportRequest'
-      responses:
-        '200':
-          description: Reporte rechazado exitosamente y el usuario tiene 5 días para corregirlo.
-
-  /moderator/reports/generate-report:
-    get:
-      summary: Generar informe de reportes
-      tags:
-        - Moderador
-      description: Permite a los moderadores generar informes de reportes filtrados por sector, categoría y período de tiempo. El informe puede visualizarse en la web y descargarse en PDF.
-      parameters:
-        - name: sector
-          in: query
-          schema:
-            type: string
-        - name: categoria
-          in: query
-          schema:
-            type: string
-        - name: fecha_inicio
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: fecha_fin
-          in: query
-          schema:
-            type: string
-            format: date
-      responses:
-        '200':
-          description: Informe generado exitosamente con una lista de reportes.
-
-
-
-  /login:
+  /api/auth/login:
     post:
       summary: Iniciar sesión
-      description: Verifica las credenciales del Usuario/Moderador y devuelve un token de sesión
+      tags:
+        - Usuario
+        - Moderador
+      description: | 
+        Verifica las credenciales del usuario/moderador y devuelve un token de sesión en una cookie segura.
       requestBody:
         required: true
         content:
@@ -572,53 +322,1162 @@ paths:
               $ref: "#/components/schemas/LoginRequest"
       responses:
         "200":
-          description: Login exitoso
-          content:
-            application/json:
+          description: Inicio de sesión exitoso. Se establece una cookie de sesión (`SESSIONID`).
+          headers:
+            Set-Cookie:
+              description: "Cookie de sesión con el identificador de sesión"
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                    # Buena práctica ante la seguridad sel sitio web.
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                type: string
+        "400":
+          description: "Solicitud inválida (datos incorrectos o incompletos)."
         "401":
-          description: Credenciales incorrectas
+            description: "Credenciales incorrectas o cuenta inactiva."
+        "403":
+            description: "Acceso denegado. La cuenta ha sido bloqueada o deshabilitada."
+        "429":
+          description: "Demasiados intentos fallidos. Inténtalo más tarde."
+        "500":
+            description: "Error interno del servidor."
 
-  /nofiticaciones:
-    get:
-      summary: Obtener notificaciones de usuario
-      description: Devuelve la lista de notificaciones del usuario, incluyendo reportes nuevos en su zona.
+
+# Apis exclusivas del moderador
+  /api/reportes/{id}/estados:
+    put:
+      summary: Gestionar un reporte (Verificar, Rechazar, Eliminar)
+      tags:
+        - Reporte
+      description: |
+        Permite a los moderadores cambiar el estado de un reporte.  
+        - `Verificado`: Acepta el reporte como válido.
+        - `Rechazado`: Se rechaza con un motivo y el usuario tiene **5 días** para corregirlo.
+        - `Eliminado`: Se borra completamente el reporte.
+        - **Cada cambio de estado se registra en un historial.**
+        - **El usuario recibirá un email notificando el cambio.**
+      security:
+        - cookieAuth: [ ]  # Requiere autenticación con cookies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del reporte a gestionar.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GestionReporteRequest"
       responses:
         '200':
-          description: Lista de notificaciones obtenida exitosamente.
+          description: Estado del reporte actualizado exitosamente.
+        '400':
+          description: Datos inválidos en la solicitud.
+        '401':
+          description: No autenticado, se requiere iniciar sesión.
+        '403':
+          description: Usuario no autorizado para esta acción.
+        '404':
+          description: Reporte no encontrado.
+        '500':
+          description: Error interno del servidor.
 
+  /api/moderadores/categorias:
     post:
-        summary: Enviar notificación a un usuario
-        description: Envia una notificación en tiempo real a un usuario usando WebSockets o Firebase Cloud Messaging.
-        requestBody:
-          required: true
+      summary: Crear una nueva categoría de reporte.
+      tags:
+        - Moderador
+      description: Permite a los moderadores agregar una nueva categoría de reportes.
+      security:
+        - cookieAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Categoria"
+      responses:
+        '201':
+          description: Categoría creada exitosamente.
+        "400":
+          description: Datos inválidos o faltantes.
+        "403":
+          description: Acceso denegado, solo moderadores pueden crear categorías.
+        "500":
+          description: Error interno del servidor.
+
+    get:
+      summary: Obtener todas las categorías de reportes.
+      tags:
+        - Moderador
+      description: Permite obtener la lista de categorías de reportes disponibles.
+      responses:
+        "200":
+          description: Lista de categorías obtenida exitosamente.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NotificationRequest'
-        responses:
-          '200':
-            description: Notificación enviada exitosamente.
+                type: array
+                items:
+                  $ref: "#/components/schemas/Categoria"
+        "500":
+          description: Error interno del servidor.
 
-  /notifications/{id}:
+  /api/moderadores/categorias/{id}:
+    put:
+      summary: Editar una categoría de reportes.
+      tags:
+        - Moderador
+      description: |
+        Permite a un moderador actualizar el nombre y descripción de una categoría existente.
+        - No se permite cambiar una categoría si ya está asociada a reportes.
+      security:
+        - cookieAuth: [ ]  # Solo moderadores autenticados pueden acceder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la categoría a modificar.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  description: Nuevo nombre de la categoría.
+                descripcion:
+                  type: string
+                  description: Nueva descripción de la categoría.
+      responses:
+        "200":
+          description: Categoría actualizada exitosamente.
+        "400":
+          description: Datos inválidos o faltantes.
+        "403":
+          description: Acceso denegado, solo moderadores pueden editar categorías.
+        "404":
+          description: Categoría no encontrada.
+        "409":
+          description: No se puede modificar una categoría asociada a reportes.
+        "500":
+          description: Error interno del servidor.
+
+    delete:
+      summary: Eliminar una categoría de reportes.
+      tags:
+        - Moderador
+      description: |
+        Permite a un moderador eliminar una categoría de reportes.
+        - No se permite eliminar una categoría si está asociada a algún reporte.
+      security:
+        - cookieAuth: [ ]  # Solo moderadores autenticados pueden acceder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la categoría a eliminar.
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Categoría eliminada exitosamente.
+        "403":
+          description: Acceso denegado, solo moderadores pueden eliminar categorías.
+        "404":
+          description: Categoría no encontrada.
+        "409":
+          description: No se puede eliminar una categoría asociada a reportes.
+        "500":
+          description: Error interno del servidor.
+
+# Apis de los reportes
+  /api/reportes/informes:
     get:
-      summary: Obtener el detalle de una notificación
-      description: Devuelve la información completa de una notificación, incluyendo comentarios y detalles del reporte relacionado.
+      summary: Generar informe de reportes de incidentes en formato JSON.
+      tags:
+        - Moderador
+      description: |
+        Permite generar un informe de los reportes de incidentes filtrados por sector, categoría y rango de fechas. 
+        El informe se devuelve en formato JSON para ser mostrado en la web.
+      security:
+        - cookieAuth: [ ]  # Solo usuarios autenticados pueden acceder
+      parameters:
+        - name: sector
+          in: query
+          required: false
+          description: Filtrar reportes por sector.
+          schema:
+            type: string
+        - name: categoria
+          in: query
+          required: false
+          description: Filtrar reportes por categoría.
+          schema:
+            type: string
+        - name: fechaInicio
+          in: query
+          required: false
+          description: Fecha de inicio del rango de tiempo (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+        - name: fechaFin
+          in: query
+          required: false
+          description: Fecha de fin del rango de tiempo (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Informe generado exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reporte"
+        "400":
+          description: Parámetros inválidos.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description: Acceso denegado, solo moderadores pueden generar los informes.
+        "500":
+          description: Error interno del servidor.
+
+  /api/reportes/informes/pdf:
+    get:
+      summary: Generar y descargar un informe de reportes en formato PDF.
+      tags:
+        - Moderador
+      description: |
+        Genera un informe de reportes de incidentes en formato PDF según los filtros aplicados. 
+        Se puede descargar el documento con los datos procesados.
+      security:
+        - cookieAuth: [ ]  # Solo usuarios autenticados pueden acceder
+      parameters:
+        - name: sector
+          in: query
+          required: false
+          description: Filtrar reportes por sector.
+          schema:
+            type: string
+        - name: categoria
+          in: query
+          required: false
+          description: Filtrar reportes por categoría.
+          schema:
+            type: string
+        - name: fechaInicio
+          in: query
+          required: false
+          description: Fecha de inicio del rango de tiempo (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+        - name: fechaFin
+          in: query
+          required: false
+          description: Fecha de fin del rango de tiempo (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Informe generado exitosamente en formato PDF.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Parámetros inválidos.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description: Acceso denegado, solo moderadores pueden generar los informes.
+        "500":
+          description: Error interno del servidor.
+
+# Apis del reporte, con sus funcionalidades.
+  /api/reportes:
+    post:
+      summary: Usuario registra un reporte.
+      tags:
+        - Reporte
+      description: |
+        Permite a un usuario registrar un nuevo reporte sobre un incidente o problema.
+        El usuario debe estar autenticado para realizar esta acción.
+        **Validaciones:**
+            - Se verifica si ya existe un reporte con la misma descripción, ubicación y fecha.
+            - Si el reporte ya existe, se devuelve un error `409 Conflict`.
+            - Se recomienda usar Mapbox para obtener la ubicación exacta.
+      security:
+        - cookieAuth: [ ]  # Usa autenticación basada en cookies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reporte"
+      responses:
+        "201":
+          description: Registro del reporte exitosamente.
+        "400":
+          description: Error en los datos enviados o falta de datos obligatorios.
+        "401":
+          description: Usuario No autenticado, se requiere iniciar sesión.
+        "403":
+          description: Usuario autenticado, pero sin permisos para registrar reportes.
+        "404":
+          description: Usuario no encontrado en la base de datos.
+        "409":
+          description: Conflicto - Ya existe un reporte similar en la misma ubicación y fecha.
+        "422":
+          description: Datos válidos en formato, pero no cumplen con las reglas de negocio.
+        "500":
+          description: Error interno del servidor
+
+  /api/reportes/{id}:
+    put:
+      summary: Editar reporte existente
+      tags:
+        - Reporte
+      description: | 
+        Permite a un usuario modificar los datos de un reporte existente. 
+        - Solo el usuario que creó el reporte o un moderador puede editarlo.
+        - Se valida que los datos sean correctos y que no existan registros duplicados.
+      security:
+        - cookieAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id del reporte a actualizar.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                titulo:
+                  type: string
+                  example: "Nuevo título del reporte"
+                categoria:
+                  $ref: '#/components/schemas/Categoria'
+                descripcion:
+                  type: string
+                  format: descripción
+                  example: "Descripción actualizada del problema"
+                ubicacion:
+                  $ref: '#/components/schemas/Ubicacion'
+                foto:
+                  type: string
+                  format: uri
+                  example: "https://example.com/nueva-foto.jpg"
+      responses:
+        "200":
+          description: Reporte actualizado exitosamente.
+        "400":
+          description: Datos inválidos o faltantes en la solicitud.
+        "401":
+          description: No autentificado, se requiere iniciar sesión.
+        "403":
+          description: Usuario No autorizado para modificar  el reporte.
+        "404":
+          description: Reporte no encontrado.
+        "422":
+          description: Datos válidos en formato, pero no cumplen con las reglas de negocio.
+        "500":
+          description: Error interno del servidor
+
+    delete:
+      summary: Eliminar reporte
+      tags:
+        - Reporte
+      security:
+        - cookieAuth: [ ]
+      description: |
+        Permite a un usuario eliminar su propio reporte. 
+        Un moderador también puede eliminar reportes si es necesario.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id del reporte a eliminar
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Reporte eliminado exitosamente.
+        "202":
+          description: La solicitud fue aceptada, pero la eliminación se procesará más tarde.
+        "400":
+          description: ID del reporte inválido.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description:  Usuario no autorizado para eliminar el reporte.
+        "404":
+          description: Reporte no encontrado.
+        "500":
+          description: Error interno del servidor.
+
+    get:
+      summary: Obtener el reporte mediante su id.
+      tags:
+        - Reporte
+      description: |
+        Permite a un usuario obtener los detalles de un reporte específico. 
+        Un moderador también puede acceder a los reportes si es necesario.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id del reporte a obtener
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Datos del reporte obtenidos exitosamente,
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reporte"
+        "400":
+          description: ID de reporte inválido.
+        "403":
+          description: Usuario no autorizado para ver el reporte.
+        "404":
+          description: Reporte no encontrado.
+        "500":
+          description: Error interno del servidor.
+
+
+  /api/reportes/usuarios/{id}:
+      get:
+        summary: Obtener todos los reportes de un usuario
+        tags:
+          - Reporte
+          - Usuario
+        description: |
+          Permite a un usuario autenticado obtener todos los reportes que ha registrado. 
+          Un moderador también puede ver los reportes de cualquier usuario.
+        security:
+          - cookieAuth: [ ]  # Usa autenticación basada en cookies
+        parameters:
+          - name: id
+            in: path
+            required: true
+            description: ID del usuario cuyos reportes se desean obtener.
+            schema:
+              type: string
+          - name: estado
+            in: query
+            required: false
+            description: Filtrar reportes por estado (Pendiente, Verificado, Rechazado).
+            schema:
+              type: string
+              enum: [ "Pendiente", "Verificado", "Rechazado" ]
+          - name: categoria
+            in: query
+            required: false
+            description: Filtrar reportes por categoría.
+            schema:
+              type: string
+        responses:
+          "200":
+            description: Lista de reportes obtenida exitosamente.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Reporte"
+          "400":
+            description: ID de usuario inválido o parámetros incorrectos.
+          "401":
+            description: No autenticado, se requiere iniciar sesión.
+          "403":
+            description: Usuario no autorizado para ver estos reportes.
+          "404":
+            description: No se encontraron reportes para el usuario proporcionado.
+          "500":
+            description: Error interno del servidor.
+
+  /api/reportes/{id}/importante:
+    patch:
+      summary: Marcar un reporte como importante
+      tags:
+        - Reporte
+      description: |
+        Permite a los usuarios calificar un reporte como importante. 
+          - Cada usuario **solo puede votar una vez por reporte**.
+          - La severidad del reporte se determina en base al número de votos recibidos.
+          - **Niveles de severidad:**
+            - **Baja** (1 - 5 votos)
+            - **Media** (6 - 15 votos)
+            - **Alta** (más de 15 votos)
+      security:
+        - cookieAuth: [ ]   # Se requiere autenticación basada en cookies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del reporte a calificar como importante.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idUsuario:
+                  type: string
+                  description: ID del Usuario para tener seguimiento de los 'likes'.
+                  example: 1001330212
+      responses:
+        '200':
+          description: Calificación de importancia registrada exitosamente.
+        '400':
+          description: El usuario ya ha votado por este reporte o ID inválido.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description: Usuario no autorizado para esta acción.
+        "404":
+          description: Reporte no encontrado.
+        "500":
+          description: Error interno del servidor.
+
+  /api/reportes/{id}/resuelto:
+    patch:
+      summary: Marca un reporte como resuelto.
+      tags:
+        - Reporte
+      description: |
+        Permite a un **Usuario** o **Moderador** marcar un reporte como 'Resuelto' cuando lo considere apropiado.
+          - **Usuarios** solo pueden marcar sus propios reportes como resueltos.
+          - **Moderadores** pueden marcar cualquier reporte como resuelto si verifican que la situación fue atendida.
+      security:
+        - cookieAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del reporte a marcar como resuelto.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reporte marcado como resuelto exitosamente.
+        "401":
+          description: No autenticado. Se requiere iniciar sesión.
+        "403":
+          description: Usuario no autorizado para marcar este reporte como resuelto.
+        '404':
+          description: Reporte no encontrado.
+        "409":
+          description: El reporte ya está marcado como resuelto.
+        '500':
+          description: Error interno del servidor.
+
+
+# API's de los reportes favoritos.
+  /api/reportes/{id}/favorito:
+    post:
+      summary: Marcar un reporte como favorito.
+      tags:
+        - Reporte
+      description: |
+        Permite al usuario autenticado agregar un reporte a su lista de favoritos.  
+        - Un usuario **solo puede agregar un reporte una vez a favoritos**.
+      security:
+        - cookieAuth: [ ]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
-        '200':
+        "200":
+          description: Reporte agregado a favoritos exitosamente.
+        "400":
+          description: Solicitud inválida (por ejemplo, el usuario ya ha marcado este reporte).
+        "401":
+          description: Usuario no autenticado.
+        "403":
+          description: Acceso denegado (un usuario no puede modificar favoritos de otro usuario).
+        "404":
+            description: Reporte no encontrado.
+        "500":
+          description: Error interno del servidor.
+
+    delete:
+      summary: Quitar un reporte de favoritos.
+      tags:
+        - Reporte
+      description: |
+          Permite al usuario autenticado eliminar un reporte de su lista de favoritos.
+      security:
+          - cookieAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del reporte a eliminar de favoritos.
+          schema:
+            type: string
+            format: uuid
+      responses:
+          "200":
+            description: Reporte eliminado de favoritos exitosamente.
+          "400":
+            description: Solicitud inválida (por ejemplo, el reporte no estaba en favoritos).
+          "401":
+            description: Usuario no autenticado.
+          "403":
+            description: Denegado (un usuario no puede modificar favoritos de otro usuario).
+          "404":
+            description: Reporte no encontrado.
+          "500":
+            description: Error en el servidor.
+
+  /api/favoritos/usuarios/{id}:
+    get:
+      summary: Obtener la lista de reportes favoritos de un usuario.
+      tags:
+        - Usuario
+      description: |
+        Devuelve la lista de reportes que un usuario ha marcado como favoritos.
+        - Solo el usuario autenticado puede consultar su propia lista.
+        - Se pueden agregar filtros opcionales para mejorar la consulta.
+      security:
+        - cookieAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del usuario cuya lista de favoritos se desea obtener.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Lista de reportes favoritos obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reporte"
+        "400":
+          description: Solicitud inválida (ID no válido o error en los parámetros de consulta).
+        "401":
+          description: Usuario no autenticado.
+        "403":
+          description: Acceso denegado (un usuario no puede consultar favoritos de otro usuario).
+        "404":
+          description: Usuario no encontrado.
+        "500":
+          description: Error interno del servidor.
+
+#Apis de los comentarios
+  /api/reportes/{id}/comentarios:
+    post:
+      summary: Agregar un comentario a un reporte.
+      tags:
+        - Reporte
+        - Comentarios
+      description: |
+        Permite a los usuarios agregar comentarios a un reporte específico.
+            - **Usuarios autenticados** pueden comentar en cualquier reporte visible.
+            - Se enviará un email al usuario que creó el reporte con el contenido del comentario.
+            - **Moderadores** pueden comentar para dar seguimiento al caso.
+      security:
+        - cookieAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del reporte al que se agregará el comentario
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Comentario"
+      responses:
+        '201':
+          description: Comentario agregado exitosamente. Se ha notificado al dueño del reporte por correo.
+        '400':
+          description:  Datos de entrada inválidos o faltantes.
+        "401":
+          description: No autenticado. Se requiere iniciar sesión.
+        "403":
+          description: No autorizado para comentar en este reporte.
+        "404":
+          description: Reporte no encontrado.
+        "500":
+          description: Error interno del servidor.
+
+    get:
+      summary: Obtener los comentarios de un reporte.
+      tags:
+        - Reporte
+        - Comentarios
+      description:  |
+        Permite a un usuario obtener todas las respuestas de un comentario específico.
+        Los moderadores pueden ver todas las respuestas sin restricciones.
+      security:
+        - cookieAuth: [ ]  # Requiere autenticación mediante cookies
+      parameters:
+         - name: id
+           in: path
+           required: true
+           description:  ID del comentario del cual se desean obtener respuestas.
+           schema:
+             type: string
+      responses:
+        "200":
+          description: Respuestas obtenidas exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comentario"
+        "400":
+          description: ID de comentario inválido.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description: No autorizado para ver estas respuestas.
+        "404":
+          description: Comentario no encontrado o sin respuestas.
+        "500":
+          description: Error interno del servidor.
+
+  /api/comentarios/{id}:
+    put:
+      summary: Modificar un comentario en un reporte.
+      tags:
+        - Comentarios
+      description: |
+        Permite a un usuario editar su propio comentario en un reporte. 
+        Un moderador también puede modificar comentarios si es necesario.
+      security:
+        - cookieAuth: [ ]  # Requiere autenticación mediante cookies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del comentario a modificar.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contenido:
+                  type: string
+                  description: Nuevo contenido del comentario.
+      responses:
+        "200":
+          description: Comentario actualizado exitosamente.
+        "400":
+          description: Datos inválidos en la solicitud.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description: No autorizado para modificar este comentario.
+        "404":
+          description: Comentario no encontrado.
+        "500":
+          description: Error interno del servidor.
+
+    delete:
+      summary: Eliminar un comentario existente.
+      tags:
+        - Comentarios
+      description: |
+        Permite a un usuario eliminar su propio comentario en un reporte.
+        Un moderador también puede eliminar comentarios si es necesario.
+      security:
+        - cookieAuth: [ ]  # Requiere autenticación mediante cookies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del comentario a eliminar.
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Comentario eliminado exitosamente.
+        "400":
+          description: ID del comentario inválido.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description: No autorizado para eliminar este comentario.
+        "404":
+          description: Comentario no encontrado.
+        "500":
+          description: Error interno del servidor.
+
+    get:
+      summary: Obtener un comentario mediante su ID.
+      tags:
+        - Comentarios
+      description: |
+        Permite a un usuario obtener los detalles de un comentario en un reporte.
+        Los moderadores pueden ver cualquier comentario.
+      security:
+        - cookieAuth: [ ]  # Requiere autenticación mediante cookies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del comentario a obtener.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Comentario obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comentario"
+        "400":
+          description: ID de comentario inválido.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description: No autorizado para ver este comentario.
+        "404":
+          description: Comentario no encontrado.
+        "500":
+          description: Error interno del servidor.
+
+  /api/comentarios/{id}/respuestas:
+    post:
+      summary: Agrega una respuesta a un comentario.
+      tags:
+        - Comentarios
+      description: |
+        Permite a los usuarios agregar respuestas a un comentario específico en un reporte.
+        - Se enviará un email al autor del comentario original notificándole la respuesta.
+      security:
+        - cookieAuth: [ ]  # Requiere autenticación con cookies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del comentario al que se agregará la respuesta.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Comentario"
+      responses:
+        '201':
+          description: Respuesta agregada exitosamente. Se ha notificado al autor del comentario.
+        '400':
+          description: Datos de entrada inválidos o faltantes.
+        '401':
+          description: No autenticado, se requiere iniciar sesión.
+        '403':
+          description: Usuario no autorizado para responder en este comentario.
+        '404':
+          description: Comentario no encontrado.
+        '500':
+          description: Error interno del servidor.
+
+    get:
+      summary: Obtener respuestas de un comentario.
+      tags:
+        - Comentarios
+      description: |
+        Permite a un usuario obtener todas las respuestas de un comentario específico.
+        Los moderadores pueden ver todas las respuestas sin restricciones.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del comentario a obtener.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Respuestas obtenidas exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comentario"
+        "400":
+          description: ID de comentario inválido.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description: No autorizado para ver estas respuestas.
+        "404":
+          description: Comentario no encontrado o sin respuestas.
+        "500":
+          description: Error interno del servidor.
+
+# API's del Historial Estado de un Reporte.
+
+  /api/reportes/{id}/historial:
+    post:
+      summary: Registrar historial de cambios de estado
+      tags:
+        - Reporte
+      description: | 
+        Registra un nuevo cambio de estado en el historial del reporte.
+      security:
+        - cookieAuth: [ ]  # Solo moderadores pueden registrar cambios.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del reporte al que se le registra el historial.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Historial'
+      responses:
+        "201":
+          description: Historial de cambios registrado exitosamente.
+        "400":
+          description: Datos inválidos.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description: Usuario no autorizado para registrar historial.
+        "404":
+          description: Reporte no encontrado.
+        "500":
+          description: Error interno del servidor.
+
+    get:
+      summary: Obtener historial de estados de un reporte
+      tags:
+        - Reporte
+      description: |
+        Permite obtener el historial de cambios de estado de un reporte específico.
+        Incluye información sobre quién hizo el cambio, la fecha y el motivo.
+      security:
+        - cookieAuth: [ ]  # Solo usuarios autenticados pueden ver el historial.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del reporte cuyo historial se desea consultar.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Historial de cambios obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Historial'
+        "400":
+          description: ID inválido o error en la solicitud.
+        "401":
+          description: No autenticado, se requiere iniciar sesión.
+        "403":
+          description: Usuario no autorizado para ver las respuestas.
+        "404":
+          description: No se encontró respuestas para el comentario.
+        "500":
+          description: Error interno del servidor.
+
+
+# API's de notificaciones
+  /api/notificaciones:
+    post:
+      summary: Crear y enviar una notificación a un usuario.
+      tags:
+        - Notificaciones
+      description: |
+        Genera una notificación cuando se crea un reporte y la envía a los usuarios cercanos 
+        mediante WebSockets, Firebase Cloud Messaging o correo electrónico.
+        - **Las notificaciones solo se envían a usuarios dentro de un radio geográfico definido**.
+        - Se determina la cercanía comparando la ubicación del reporte con la ubicación registrada de los usuarios.
+      security:
+        - cookieAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notificacion'
+      responses:
+        "201":
+          description: Notificación creada y enviada exitosamente.
+        "400":
+          description: Datos inválidos. El cuerpo de la solicitud está mal formado o faltan campos obligatorios.
+        "401":
+          description: El usuario no está autenticado (falta token o cookie).
+        "403":
+          description: El usuario autenticado no tiene permisos para enviar notificaciones.
+        "404":
+          description: No se encontró el reporte o usuarios en el área definida.
+        "422":
+          description: Datos válidos en formato pero que no cumplen con reglas de negocio.
+        "429":
+          description:  Se ha alcanzado el límite de notificaciones permitidas en un corto período de tiempo (rate limiting).
+        "500":
+          description: Error en el servidor.
+
+
+  /api/notificaciones/{id}:
+    get:
+      summary: Obtener detalle de una notificación.
+      tags:
+        - Notificaciones
+      description: |
+        Obtiene información detallada de una notificación específica,
+        incluyendo el reporte asociado, los usuarios que la recibieron y comentarios relacionados.
+      security:
+        - cookieAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la notificación a consultar.
+          schema:
+            type: string
+      responses:
+        "200":
           description: Detalle de la notificación obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificacionDetalle"
+        "400":
+          description:  El ID proporcionado no es válido.
+        "401":
+          description: Usuario no autenticado (falta de token o cookie).
+        "403":
+          description: El usuario autenticado no tiene permiso para ver la notificación.
+        "404":
+          description: Notificación no encontrada.
+        "422":
+          description: Datos válidos en formato, pero no cumplen con reglas de negocio.
+        "500":
+          description: Error en el servidor.
+
+  /api/notificacion/{id}/leido:
+    patch:
+      summary: Marcar una notificación como leída.
+      tags:
+        - Notificaciones
+      description: |
+        Permite marcar una notificación como leída por parte del usuario autenticado. 
+        - Un usuario solo puede marcar sus propias notificaciones.
+        - Si la notificación ya está marcada como leída, no se genera un error.
+      security:
+        - cookieAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la notificación a marcar como leída.
+          schema:
+            type: string
+      responses:
+          "200":
+            description: Notificación marcada como leída exitosamente.
+          "400":
+            description: Solicitud inválida.
+          "401":
+            description: Usuario no autenticado.
+          "403":
+            description: Acceso denegado (la notificación no pertenece al usuario).
+          "404":
+            description: Notificación no encontrada.
+          "500":
+            description: Error interno del servidor.
+
+  /api/notificaciones/usuarios/{id}:
+    get:
+      summary: Obtener todas las notificaciones de un usuario.
+      tags:
+        - Notificaciones
+        - Usuario
+      description: |
+        Recupera todas las notificaciones asociadas a un usuario específico, incluyendo notificaciones no leídas y leídas. 
+           - Solo el usuario autenticado o un moderador pueden consultar estas notificaciones.
+           - Las notificaciones incluyen detalles como fecha, estado (leída/no leída).
+      security:
+        - cookieAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del Usuario cuyas notificaciones se desea consultar.
+          schema:
+            type: string
+        - name: estado
+          in: query
+          required: false
+          description: Filtra por estado de la notificación (leída/no leída).
+          schema:
+            type: string
+            enum: [ "leida", "no_leida" ]
+      responses:
+        "200":
+          description: Lista de notificaciones obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notificacion"
+        "400":
+          description: Solicitud inválida (por ejemplo, ID no válido o parámetro incorrecto).
+        "401":
+          description: Usuario no autenticado.
+        "403":
+          description: Acceso denegado (un usuario no puede consultar notificaciones de otro usuario).
+        "404":
+          description: Usuario no encontrado.
+        "500":
+          description: Error en el servidor.
+
 
 components:
   schemas:
@@ -628,13 +1487,19 @@ components:
       properties:
         id:
           type: string
-          example: "1001330212"
+          format: uuid  # Se trabaja el identificador único
+          example: "1032"
         nombre:
           type: string
           example: "Nicolas Cabrera"
         direccion:
           type: string
-          example: "Calle 5 norte"
+          example: "Calle 5 Norte #12-34"
+        ubicacion:
+          $ref: '#/components/schemas/Ubicacion'
+        ciudad:
+          type: string
+          example: "Bogota"
         estado:
           type: string
           enum: [ "Activo","Inactivo" ]
@@ -648,29 +1513,46 @@ components:
               example: "Usuario"
             password:
               type: string
-              example: "nicolas1001"
+              example: "asdac"
             email:
               type: string
+              format: email
+              pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' # Formato obligatorio
               example: "nicolasC@example.com"
+            reportes:
+              type: array
+              nullable: true
+              items:
+                $ref: '#/components/schemas/Reporte'
+            reportesFav:
+              type: array
+              nullable: true
+              items:
+                $ref: '#/components/schemas/Reporte'
+            notificaciones:
+              type: array
+              nullable: true
+              items:
+                $ref: '#/components/schemas/Notificacion'
+
 
 #Esquema del reporte.
     Reporte:
       type: object
       properties:
         Id:
-          type: integer
-          format: id
-          example: 350
+          type: string
+          format: uuid
+          example: "AB20"
         IdUsuario:
           type: string
-          example: "1001330212"
+          format: uuid
+          example: "1032"
         titulo:
           type: string
           example: "Reporte de Nicolas"
         categoria:
-          type: string
-          enum: [ "seguridad","emergencia médica","infraestructura","mascotas","comunidad" ]
-          example: "seguridad"
+          $ref: '#/components/schemas/Categoria'
         estaResuelto:
           type: boolean
           example: false
@@ -678,43 +1560,48 @@ components:
           type: string
           format: descripción
           example: "Problemas de robos y violencia"
-        estaVerificacion:
-          type: boolean
-          example: false
+        estado:
+          type: string
+          enum: ["Pendiente", "Verificado", "Rechazado"]
+          example: "Aprobado"
         ubicacion:
-          type: object
-          properties:
-            latitud:
-              type: number
-              format: float
-              example: -34.6037
-            longitud:
-              type: number
-              format: float
-              example: -58.3816
+          $ref: '#/components/schemas/Ubicacion'
         foto:
           type: string
           format: uri
           example: "https://example.com/foto-reporte.jpg"
         numImportancia:
           type: integer
+          description: Número de usuarios que han calificado este reporte como importante
           example: 0
+        severidad:
+          type: string
+          description: Nivel de severidad basado en la cantidad de votos
+          enum: [ "Baja", "Media", "Alta" ]
+          example: "Media"
         comentarios:
           type: array
           nullable: true
           items:
             $ref: '#/components/schemas/Comentario'
+        historialEstado:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/Historial'
 
 #Esquema de los comentarios.
     Comentario:
       type: object
       properties:
         idComentario:
-          type: integer
+          type: string
+          format: uuid
           example: 101
         idUsuario:
           type: string
-          example: "1001330212"
+          format: uuid
+          example: "1032"
         comentario:
           type: string
           example: "Tu comentario es pura falsedad"
@@ -728,65 +1615,178 @@ components:
           items:
             $ref: '#/components/schemas/Comentario'
 
-    ActivaciónCuentaRequest:
+# Esquema del Historial.
+    Historial:
+      type: object
+      properties:
+        estadoAnterior:
+          type: string
+          description: "Estado previo del reporte."
+        nuevoEstado:
+          type: string
+          description: "Estado actualizado del reporte."
+        fechaCambio:
+          type: string
+          format: date-time
+          description: "Fecha y hora del cambio de estado."
+        moderadorId:
+          type: string
+          description: "ID del moderador que realizó el cambio."
+        motivo:
+          type: string
+          description: "Motivo del cambio de estado (opcional)."
+
+#Esquema de categoría.
+    Categoria:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 2A1
+        nombre:
+          type: string
+          example: "Infraestructura"
+        descripcion:
+          type: string
+          example: "Calles en mal estado"
+
+# Esquema de Ubicación
+    Ubicacion:
+      type: object
+      properties:
+        latitud:
+          type: number
+          format: float
+          example: -34.6037
+        longitud:
+          type: number
+          format: float
+          example: -58.3816
+
+# Esquema de notificación
+    Notificacion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "ID único de la notificación"
+        idUsuario:
+          type: string
+          format: uuid
+          description: "ID del usuario que recibe la notificación"
+        idReporte:
+          type: string
+          format: uuid
+          description: ID del reporte asociado a la notificación.
+        titulo:
+          type: string
+          description: Título de la notificación.
+        mensaje:
+          type: string
+          description: "Mensaje de la notificación"
+        fecha:
+          type: string
+          format: date-time
+          description: "Fecha y hora en que se envió la notificación"
+        leida:
+          type: boolean
+          description: "Indica si la notificación ha sido vista por el usuario"
+        ubicacionReporte:
+          type: object
+          description: "Coordenadas del reporte asociado."
+          properties:
+            latitud:
+              type: number
+              format: float
+              description: "Latitud de la ubicación del reporte."
+              example: -34.6037
+            longitud:
+              type: number
+              format: float
+              description: "Longitud de la ubicación del reporte."
+              example: -58.3816
+        radio:
+          type: number
+          format: float
+          description: Radio en kilómetros para notificar usuarios cercanos.
+
+# Esquema para restablecer contraseña
+    ResetPasswordRequest:
       type: object
       properties:
         email:
           type: string
           format: email
-        código:
+          example: "usuario@example.com"
+        token:
           type: string
-          example: "QR92"
+          description: "Código de verificación de 6 dígitos enviado al correo."
+          example: "123456"
+        newPassword:
+          type: string
+          description: "Nueva contraseña del usuario"
+          example: "NuevaClaveSegura2024!"
 
+
+# Esquema para el inicio de sesión
     LoginRequest:
       type: object
-      properties:
-        user:
-          type: object
-          properties:
-            password:
-              type: string
-              format: password
-              example: "nicolas1001"
-            email:
-              type: string
-              format: email
-              example: "nicolasC@example.com"
       required:
         - password
         - email
-
-    UsuarioEmail:
-      type: object
       properties:
+        password:
+          type: string
+          format: password
+          example: "nicolas1001"
         email:
           type: string
           format: email
-          example: "juan@example.com"
+          example: "nicolasC@example.com"
 
-    CategoryRequest:
-       type: object
-       properties:
-        nombre:
-          type: string
-          example: "Mascotas"
 
-    RejectReportRequest:
+# Esquema para el cambio de estado del reporte.
+    GestionReporteRequest:
+      type: object
+      required:
+        - nuevoEstado
+      properties:
+          nuevoEstado:
+            type: string
+            description: Estado al que se cambiará el reporte (`Verificado`, `Rechazado`, `Eliminado`).
+            enum: [ "Verificado", "Rechazado", "Eliminado" ]
+            example: "Verificado"
+          idUsuario:
+            type: string
+            format: uuid
+          motivo:
+            type: string
+            description: Motivo del cambio de estado (requerido solo para rechazar)
+
+# Esquema para los detalles de la notificacion.
+    NotificacionDetalle:
       type: object
       properties:
-        motivo:
-          type: string
-          example: "Falta de evidencia en el reporte."
+        notificacion:
+          $ref: "#/components/schemas/Notificacion"
+        reporte:
+          $ref: "#/components/schemas/Reporte"
+        comentarios:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comentario"
 
 
-    NotificationRequest:
-      type: object
-      properties:
-        usuarioId:
-          type: integer
-          example: 123
-        mensaje:
-          type: string
-          example: "Nuevo reporte de robo en tu zona."
+
+# Seguridad  ( Tokens o Cookies )
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: SESSIONID  # Cookie de autenticación con la sesión del usuario
 
 
+
+# Firma ROT5:  QwE Pjanfyfr(Nicolas Cabrera Serrano)
