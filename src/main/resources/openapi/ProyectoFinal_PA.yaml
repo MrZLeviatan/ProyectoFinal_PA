@@ -104,11 +104,13 @@ paths:
         "400":
           description: Error en los datos enviados. Algún campo es inválido o está vacío.
         "401":
-          description: No autorizado (cookie o token inválido)
+          description: No autenticado.
         "403":
-            description: Acceso prohibido (ID no coincide con el autenticado)
+            description: Acceso prohibido (ID no coincide con el autenticado).
         "404":
-          description: Usuario no encontrado
+          description: Usuario no encontrado.
+        "500":
+          description: Error del servidor.
 
     delete:
       summary: Eliminar usuario
@@ -209,7 +211,7 @@ paths:
         "400":
           description: Solicitud incorrecta (Email invalido).
         "401":
-          description: No autorizado (cookie faltante o inválida).
+          description: No autenticado (cookie faltante o inválida).
         "403":
           description: Acceso prohibido (el usuario autenticado no coincide con el email).
         "404":
@@ -217,6 +219,7 @@ paths:
         "500":
           description: Error interno del servidor.
 
+  /api/usuarios/recuperar-password:
     post:
       summary: "Solicitar recuperación de contraseña"
       tags:
@@ -280,6 +283,8 @@ paths:
       description: | 
         Activa la cuenta de un usuario mediante el código enviado por correo. 
         Este código es válido por 15 minutos.
+      parameters:
+        -
       requestBody:
         required: true
         content:
@@ -289,12 +294,10 @@ paths:
               properties:
                 id:
                   type: string
+                  example: "1001330212"
                   description: Id (Cedula) del usuario
                 codigo:
-                  type: string
-                  description: Codigo de activacion enviado por correo
-                  example: QRZ3
-                  pattern: "^[A-Za-z0-9]{4,10}$"
+                  $ref: "#/components/schemas/CodigoSchema"
               required:
                 - id
                 - codigo
@@ -517,12 +520,22 @@ paths:
       security:
         - cookieAuth: [ ]  # Solo usuarios autenticados pueden acceder
       parameters:
-        - name: sector
+        - name: ubicacion
           in: query
           required: false
-          description: Filtrar reportes por sector.
+          description: Ubicación central para la búsqueda de reportes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ubicacion"
+        - name: radio
+          in: query
+          required: false
+          description: Radio en kilómetros para filtrar reportes dentro del sector.
           schema:
-            type: string
+              type: number
+              format: float
+              example: 5.0
         - name: categoria
           in: query
           required: false
@@ -1410,7 +1423,7 @@ paths:
         "500":
           description: Error en el servidor.
 
-  /api/notificacion/{id}/leido:
+  /api/notificaciones/{id}/leido:
     patch:
       summary: Marcar una notificación como leída.
       tags:
@@ -1489,16 +1502,54 @@ paths:
           description: Error en el servidor.
 
 
+  /api/codigo:
+    post:
+      summary: Enviar código de activación o recuperación
+      description: |
+        Genera un código de activación o recuperación de contraseña y lo envía al correo del usuario o moderador.
+        El código expira en 15 minutos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Id (Cédula) del usuario o moderador
+                email:
+                  type: string
+                  format: email
+                  description: Correo electrónico del usuario o moderador
+                tipo:
+                  type: string
+                  enum: [ activacion, recuperacion ]
+                  description: "Tipo de código a generar: 'activacion' para activación de cuenta, 'recuperacion' para restablecimiento de contraseña."
+              required:
+                - id
+                - email
+                - tipo
+      responses:
+        "200":
+          description: Código enviado exitosamente
+        "400":
+          description: Solicitud incorrecta (datos faltantes o formato inválido)
+        "404":
+          description: Usuario no encontrado
+        "429":
+          description: Demasiadas solicitudes, intente más tarde.
+        "500":
+          description: Error interno del servidor
+
+
+
 components:
   schemas:
 # Esquemas para las API's del usuario.
     Usuario:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid  # Se trabaja el identificador único
-          example: "1032"
         nombre:
           type: string
           example: "Nicolas Cabrera"
@@ -1510,13 +1561,17 @@ components:
         ciudad:
           type: string
           example: "Bogota"
-        estado:
-          type: string
-          enum: [ "Activo","Inactivo" ]
-          example: "Inactivo"
         user:
           type: object
           properties:
+            id:
+              type: string
+              format: uuid
+              readOnly: true
+            estado:
+              type: string
+              enum: [ "Activo","Inactivo","Eliminado" ]
+              example: "Inactivo"
             rol:
               type: string
               enum: [ "Moderador","Usuario","Megatron" ]
@@ -1564,16 +1619,17 @@ components:
         categoria:
           $ref: '#/components/schemas/Categoria'
         estaResuelto:
-          type: boolean
-          example: false
+          type: string
+          enum: ["Resuelto","NoResuelto"]
+          example: "NoResuelto"
         descripcion:
           type: string
           format: descripción
           example: "Problemas de robos y violencia"
-        estado:
+        estadoReporte:
           type: string
           enum: ["Pendiente", "Verificado", "Rechazado"]
-          example: "Aprobado"
+          example: "Verificado"
         ubicacion:
           $ref: '#/components/schemas/Ubicacion'
         foto:
@@ -1612,7 +1668,10 @@ components:
           type: string
           format: uuid
           example: "1032"
-        comentario:
+        idReporte:
+          type: string
+          format: uuid
+        contenido:
           type: string
           example: "Tu comentario es pura falsedad"
         fecha:
@@ -1682,7 +1741,7 @@ components:
           type: string
           format: uuid
           description: "ID único de la notificación"
-        idUsuario:
+        idDestinatario:
           type: string
           format: uuid
           description: "ID del usuario que recibe la notificación"
@@ -1701,26 +1760,45 @@ components:
           format: date-time
           description: "Fecha y hora en que se envió la notificación"
         leida:
-          type: boolean
+          type: string
+          enum: ["Leido","Sin_Leer"]
+          example: "Leido"
           description: "Indica si la notificación ha sido vista por el usuario"
         ubicacionReporte:
-          type: object
           description: "Coordenadas del reporte asociado."
-          properties:
-            latitud:
-              type: number
-              format: float
-              description: "Latitud de la ubicación del reporte."
-              example: -34.6037
-            longitud:
-              type: number
-              format: float
-              description: "Longitud de la ubicación del reporte."
-              example: -58.3816
+          items:
+            $ref: '#/components/schemas/Ubicacion'
         radio:
           type: number
           format: float
           description: Radio en kilómetros para notificar usuarios cercanos.
+
+# Esquema para código verificación
+    CodigoSchema:
+      type: object
+      properties:
+        descripcion:
+          type: string
+          description: Código generado único
+          example: "QRZ3"
+          pattern: "^[A-Za-z0-9]{4,10}$"
+        emailUsuario:
+          type: string
+          format: email
+          description: Email del usuario que solicita el codigo
+        fechaCreacion:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación en formato ISO 8601
+          example: "2025-03-06T14:30:00Z"
+        expira_en:
+          type: integer
+          description: Tiempo en minutos hasta la expiración
+          example: 15
+      required:
+        - valor
+        - creado_en
+        - expira_en
 
 # Esquema para restablecer contraseña
     ResetPasswordRequest:
