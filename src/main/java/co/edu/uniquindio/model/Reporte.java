@@ -16,11 +16,12 @@ public class Reporte {
     private Categoria categoria;
     private List<Comentario> comentarios;
     private boolean isVerificado;
-    private String idUsuario,idReporte,Titulo;
+    private String idUsuario,id,titulo;
     private Ubicacion ubicacion;
     private List<HistorialEstado> historial;
 
+    private String foto;
+    private int numeroImportancia;
 
-    //imagenes
 
 }

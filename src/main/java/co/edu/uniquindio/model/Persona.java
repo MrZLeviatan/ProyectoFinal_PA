@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 
 public abstract class Persona {
-    private String direccion,nombre,residencia;
+    private String direccion,nombre,ciudad;
     private Ubicacion ubicacion;
 
 }

@@ -11,5 +11,5 @@ import lombok.Setter;
 @NoArgsConstructor
 
 public class Notificacion {
-    private String id,idDestinatario,contenido,fecha,idRemitente;
+    private String id,idDestinatario,mensaje,fecha,idRemitente,titulo,ubicacionReporte;
 }
