@@ -1,6 +1,6 @@
 package co.edu.uniquindio.model.enums;
 
-public enum EstadoIsResulto {
+public enum IsEstadoResulto {
     RESUELTO,
     NO_RESUELTO
 }
