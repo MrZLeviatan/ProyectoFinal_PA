@@ -21,7 +21,6 @@ public class Usuario extends Persona{
     private List<Notificacion> notificaciones;
     private List<Reporte>reportes;
     private List<Reporte> listaReportesFavorito;
-
     private CodigoValidacion codigoValidacion;
 
 }

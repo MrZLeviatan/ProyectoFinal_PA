@@ -1,6 +1,7 @@
 package co.edu.uniquindio.model;
 
 import co.edu.uniquindio.model.enums.EstadoReporte;
+import co.edu.uniquindio.model.enums.Severidad;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,8 @@ public class Reporte {
     private EstadoReporte estadoReporte;
     private Categoria categoria;
     private List<Comentario> comentarios;
-    private boolean isVerificado;
+    private EstadoReporte verificado; // admin
+
     private String idUsuario,id,titulo;
     private Ubicacion ubicacion;
     private List<HistorialEstado> historial;
@@ -23,5 +25,5 @@ public class Reporte {
     private String foto;
     private int numeroImportancia;
 
-
+    private Severidad severidad;
 }
