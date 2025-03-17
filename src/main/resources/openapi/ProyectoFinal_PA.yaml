@@ -917,7 +917,7 @@ paths:
           description: Error interno del servidor.
 
 
-# API's de los reportes favoritos.
+# API'SercioUsuarioImplement de los reportes favoritos.
   /api/reportes/{id}/favorito:
     post:
       summary: Marcar un reporte como favorito.
@@ -1273,7 +1273,7 @@ paths:
         "500":
           description: Error interno del servidor.
 
-# API's del Historial Estado de un Reporte.
+# API'SercioUsuarioImplement del Historial Estado de un Reporte.
 
   /api/reportes/{id}/historial:
     post:
@@ -1348,7 +1348,7 @@ paths:
           description: Error interno del servidor.
 
 
-# API's de notificaciones
+# API'SercioUsuarioImplement de notificaciones
   /api/notificaciones:
     post:
       summary: Crear y enviar una notificación a un usuario.
@@ -1546,7 +1546,7 @@ paths:
 
 components:
   schemas:
-# Esquemas para las API's del usuario.
+# Esquemas para las API'SercioUsuarioImplement del usuario.
     Usuario:
       type: object
       properties:

@@ -1,6 +1,7 @@
 package co.edu.uniquindio.model;
 
 import co.edu.uniquindio.model.enums.EstadoReporte;
+import co.edu.uniquindio.model.enums.IsEstadoResulto;
 import co.edu.uniquindio.model.enums.Severidad;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Reporte {
-    private EstadoReporte estadoReporte;
+    private IsEstadoResulto estadoReporte;
     private Categoria categoria;
     private List<Comentario> comentarios;
     private EstadoReporte verificado; // admin
