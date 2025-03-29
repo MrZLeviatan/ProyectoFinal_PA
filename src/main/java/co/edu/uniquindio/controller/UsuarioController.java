@@ -1,6 +1,6 @@
 package co.edu.uniquindio.controller;
 
-import co.edu.uniquindio.services.SercioUsuarioImplement;
+import co.edu.uniquindio.services.UsuarioInterface;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -8,13 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/usuario")
 
 public class UsuarioController {
-    private SercioUsuarioImplement sercioUsuarioImplement;
 
-    public void inicio(){
-        sercioUsuarioImplement.iniciarSeccion("correo","contraseña");
-    }
 
-    public void cerrarSeccio(){
-        sercioUsuarioImplement.cerrarSeccion();
-    }
+
 }

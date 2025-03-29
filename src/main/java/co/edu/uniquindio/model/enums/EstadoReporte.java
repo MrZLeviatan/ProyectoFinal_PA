@@ -5,5 +5,4 @@ public enum EstadoReporte {
     VERIFICADO,
     ELIMINADO,
     RECHAZADO
-
 }

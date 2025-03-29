@@ -1,4 +1,10 @@
 package co.edu.uniquindio.dto.reporte;
 
-public record EliminarReporteDto() {
+import jakarta.validation.constraints.NotBlank;
+
+public record EliminarReporteDto(
+
+        @NotBlank String idReporte,
+        @NotBlank String password
+) {
 }

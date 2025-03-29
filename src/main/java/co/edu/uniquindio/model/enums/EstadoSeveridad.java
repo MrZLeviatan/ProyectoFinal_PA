@@ -1,6 +1,6 @@
 package co.edu.uniquindio.model.enums;
 
-public enum Severidad {
+public enum EstadoSeveridad {
     BAJA,
     MEDIA,
     ALTA

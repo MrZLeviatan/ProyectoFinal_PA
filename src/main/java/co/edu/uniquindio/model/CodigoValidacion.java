@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @NonNull
 public class CodigoValidacion {
-    private String correoUsuario,codigo,horaCreaciòn;
 
+    private String codigo,horaCreacion;
 
 }

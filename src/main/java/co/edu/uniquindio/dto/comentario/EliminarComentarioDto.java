@@ -1,4 +1,10 @@
 package co.edu.uniquindio.dto.comentario;
 
-public record EliminarComentarioDto() {
+import jakarta.validation.constraints.NotBlank;
+
+public record EliminarComentarioDto(
+
+        @NotBlank String idComentario,
+        @NotBlank String password
+) {
 }

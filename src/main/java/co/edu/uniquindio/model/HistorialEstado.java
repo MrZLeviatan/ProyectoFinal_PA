@@ -8,13 +8,12 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@NonNull
 public class HistorialEstado {
 
     private LocalDateTime fecha;
-    private EstadoReporte estadoAnterior,estadoReporte;
+    private EstadoReporte estadoAnterior;
+    private EstadoReporte estadoActual;
     private Usuario usuario;
-
     private String motivoCambio;
 
 }

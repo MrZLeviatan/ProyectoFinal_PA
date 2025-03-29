@@ -1,10 +1,11 @@
 package co.edu.uniquindio.dto.usuario;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record ActivarCuentaDto(
 
-        String email,//  correo perteneciente al usuario a activar
-
-        String codigo //codigo ingresado por el cliente
+        @NotBlank String id,    // Correo perteneciente al usuario a activar
+        @NotBlank CodigoValidacionDTO codigo // Código ingresado por el cliente
 ) {
 
 }
