@@ -6,7 +6,7 @@ import co.edu.uniquindio.dto.reporte.*;
 
 import java.util.List;
 
-public interface ReporteInterface {
+public interface ReporteService {
 
     /**
      * Agrega un nuevo reporte al sistema.

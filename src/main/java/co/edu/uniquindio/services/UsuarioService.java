@@ -8,7 +8,7 @@ import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.dto.usuario.*;
 
 // Interfaz que define el contrato para las operaciones relacionadas con usuarios.
-public interface UsuarioInterface {
+public interface UsuarioService {
 
     /**
      * Registra un nuevo usuario en el sistema.

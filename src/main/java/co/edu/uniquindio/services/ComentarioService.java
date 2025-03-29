@@ -4,7 +4,7 @@ import co.edu.uniquindio.dto.comentario.*;
 
 import java.util.List;
 
-public interface ComentarioInterface {
+public interface ComentarioService {
 
     /**
      * Agrega un nuevo comentario a un reporte existente.

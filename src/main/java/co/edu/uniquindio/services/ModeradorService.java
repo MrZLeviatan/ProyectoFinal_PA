@@ -9,7 +9,7 @@ import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 
 import java.util.List;
 
-public interface ModeradorInterface {
+public interface ModeradorService {
 
     /**
      *  Elimina un moderador del sistema en función de su ID y contraseña.
