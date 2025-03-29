@@ -1,6 +1,5 @@
 package co.edu.uniquindio.dto.reporte;
 
-import co.edu.uniquindio.dto.modeloDTO.UbicacionDTO;
 import co.edu.uniquindio.dto.moderador.CategoriaDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
