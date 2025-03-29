@@ -1,4 +1,4 @@
-package co.edu.uniquindio.services.impl;
+package co.edu.uniquindio.services;
 
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.LoginDto;
