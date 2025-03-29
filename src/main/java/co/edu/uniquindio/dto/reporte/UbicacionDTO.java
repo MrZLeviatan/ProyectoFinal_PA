@@ -1,4 +1,4 @@
-package co.edu.uniquindio.dto.modeloDTO;
+package co.edu.uniquindio.dto.reporte;
 
 public record UbicacionDTO(
         float latitud,

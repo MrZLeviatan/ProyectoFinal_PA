@@ -1,0 +1,66 @@
+package co.edu.uniquindio.services.impl;
+
+import co.edu.uniquindio.dto.EliminarCuentaDto;
+import co.edu.uniquindio.dto.LoginDto;
+import co.edu.uniquindio.dto.RestablecerPasswordDto;
+import co.edu.uniquindio.dto.usuario.ActivarCuentaDto;
+import co.edu.uniquindio.dto.usuario.EditarUsuarioDto;
+import co.edu.uniquindio.dto.usuario.RegistrarUsuarioDto;
+import co.edu.uniquindio.dto.usuario.UsuarioDTO;
+import co.edu.uniquindio.services.UsuarioService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class UsuarioServiceImpl implements UsuarioService {
+
+    private final MongoTemplate mongoTemplate;
+
+
+    @Override
+    public void registrarUsuario(RegistrarUsuarioDto usuario) throws Exception {
+
+    }
+
+    @Override
+    public void eliminarUsuario(EliminarCuentaDto cuentaDto) throws Exception {
+
+    }
+
+    @Override
+    public void actualizarUsuario(EditarUsuarioDto usuario) throws Exception {
+
+    }
+
+    @Override
+    public UsuarioDTO obtenerUsuarioId(String id) throws Exception {
+        return null;
+    }
+
+    @Override
+    public UsuarioDTO obtenerUsuarioEmail(String email) throws Exception {
+        return null;
+    }
+
+    @Override
+    public void solicitudRecuperarPassword(String email) throws Exception {
+
+    }
+
+    @Override
+    public void loginUsuario(LoginDto loginDto) throws Exception {
+
+    }
+
+    @Override
+    public void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws Exception {
+
+    }
+
+    @Override
+    public void activarCuenta(ActivarCuentaDto activarCuentaDto) throws Exception {
+
+    }
+}

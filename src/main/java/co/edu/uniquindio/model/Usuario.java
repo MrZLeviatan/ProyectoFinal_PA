@@ -25,7 +25,7 @@ public class Usuario extends Persona{
     private Rol rol;
     private EstadoUsuario estadoUsuario;
     @DBRef private List<Notificacion> notificaciones; // Referencia a Notificaciones en otra colección
-    @DBRef private List<Reporte>reportes;
+    @DBRef private List<Reporte> reportes;
     @DBRef private List<Reporte> listaReportesFavorito;
     private CodigoValidacion codigoValidacion;
 

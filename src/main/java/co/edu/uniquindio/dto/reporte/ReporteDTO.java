@@ -1,7 +1,6 @@
 package co.edu.uniquindio.dto.reporte;
 
 import co.edu.uniquindio.dto.comentario.ComentarioDTO;
-import co.edu.uniquindio.dto.modeloDTO.UbicacionDTO;
 import co.edu.uniquindio.dto.moderador.CategoriaDTO;
 import co.edu.uniquindio.model.enums.EstadoReporte;
 import co.edu.uniquindio.model.enums.EstadoResulto;
