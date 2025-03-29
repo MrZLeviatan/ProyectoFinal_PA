@@ -12,7 +12,7 @@ import org.mapstruct.MappingTarget;
 public interface UsuarioMapper {
 
     @Mapping(target = "rol", constant = "USUARIO")
-    @Mapping(target = "estado", constant = "INACTIVO")
+    @Mapping(target = "estadoUsuario", constant = "INACTIVO")
     Usuario toDocument(RegistrarUsuarioDto usuarioDTO);
 
     UsuarioDTO toDTO(Usuario usuario);

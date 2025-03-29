@@ -14,7 +14,6 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @Document(collection = "usuarios") // Se guarda en la colección "usuarios"
 public class Usuario extends Persona{
 
@@ -29,4 +28,15 @@ public class Usuario extends Persona{
     @DBRef private List<Reporte> listaReportesFavorito;
     private CodigoValidacion codigoValidacion;
 
+    public Usuario(String nombre, String direccion, Ciudad ciudad, String email, String password, Rol rol, EstadoUsuario estadoUsuario, List<Notificacion> notificaciones, List<Reporte> reportes, List<Reporte> listaReportesFavorito, CodigoValidacion codigoValidacion) {
+        super(nombre, direccion, ciudad);
+        this.email = email;
+        this.password = password;
+        this.rol = rol;
+        this.estadoUsuario = estadoUsuario;
+        this.notificaciones = notificaciones;
+        this.reportes = reportes;
+        this.listaReportesFavorito = listaReportesFavorito;
+        this.codigoValidacion = codigoValidacion;
+    }
 }
