@@ -87,8 +87,6 @@ public interface ModeradorService {
      * @throws Exception Si ocurre un error al recuperar las categorías.
      */
     List<CategoriaDTO> listarCategorias() throws Exception;
-
-
 }
 
 
