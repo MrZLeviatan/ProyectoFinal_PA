@@ -6,6 +6,7 @@ import co.edu.uniquindio.dto.moderador.CrearCategoriaDto;
 import co.edu.uniquindio.dto.moderador.EditarCategoriaDto;
 import co.edu.uniquindio.dto.moderador.EditarModeradorDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
+import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.ModeradorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ModeradorServiceImplement implements ModeradorService {
+
+    UsuarioRepo usuarioRepo;
+
     @Override
     public void eliminarModerador(EliminarCuentaDto cuentaDto) throws Exception {
 
