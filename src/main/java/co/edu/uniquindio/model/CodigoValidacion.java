@@ -1,13 +1,31 @@
 package co.edu.uniquindio.model;
 import lombok.*;
 
-@Getter
-@Setter
+import java.time.LocalDateTime;
+
+
 @AllArgsConstructor
 @NoArgsConstructor
-@NonNull
 public class CodigoValidacion {
 
-    private String codigo,horaCreacion;
+    private String codigo;
+    private LocalDateTime horaCreacion;
 
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    public LocalDateTime getHoraCreacion() {
+        return horaCreacion;
+    }
+
+    public void setHoraCreacion(LocalDateTime horaCreacion) {
+        this.horaCreacion = horaCreacion;
+    }
 }
+
+
