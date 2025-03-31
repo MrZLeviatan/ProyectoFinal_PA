@@ -7,14 +7,18 @@ import co.edu.uniquindio.dto.usuario.ActivarCuentaDto;
 import co.edu.uniquindio.dto.usuario.RegistrarUsuarioDto;
 import co.edu.uniquindio.exeptions.UsuarioException;
 import co.edu.uniquindio.mapper.UsuarioMapper;
+import co.edu.uniquindio.model.CodigoValidacion;
 import co.edu.uniquindio.model.Usuario;
+import co.edu.uniquindio.model.enums.EstadoUsuario;
+import co.edu.uniquindio.model.enums.Rol;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.AutentificacionService;
 import co.edu.uniquindio.services.EmailServicio;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -24,9 +28,28 @@ public class AuntentificacionImplement implements AutentificacionService {
     UsuarioMapper usuarioMapper;
     UsuarioRepo usuarioRepo;
 
+
     @Override
     public void iniciarSesion(LoginDto loginDTO) throws Exception {
-
+        Optional<Usuario> usuarioOptional= usuarioRepo.findByEmail(loginDTO.email());
+        if(usuarioOptional.isEmpty()){
+            throw new UsuarioException("El email no existe");
+        }
+        Usuario usuario = usuarioOptional.get();
+        if(usuario.getPassword().equals(loginDTO.password())){
+            if(usuario.getEstadoUsuario() == EstadoUsuario.ACTIVO){
+                if(usuario.getRol()== Rol.USUARIO){
+                    // aca que se vaya ala vista de un usuario
+                }else {
+                    //aca diriamos que se vaya a la vista de un moderador
+                }
+            }else {
+                throw new UsuarioException("El usuario debe activarse primero ");
+                //aca le mandariamos algo???
+            }
+        }else {
+            throw new UsuarioException("Contraseña incorrecta");
+        }
     }
 
     @Override
@@ -34,17 +57,22 @@ public class AuntentificacionImplement implements AutentificacionService {
         if(existeEmail(usuarioDTO.email())) //si el email es registrado tira una exception
             throw new UsuarioException("el correo se encuentra registrado");
         //el usuarioDto se transforma en un usuario nuevo
-       // Usuario usuario = usuarioMapper.toDocument(usuarioDTO);
+        Usuario usuario = usuarioMapper.toDocument(usuarioDTO);
         //guardamos el usuario en el repositorio
-        Usuario usuario= new Usuario();
         usuarioRepo.save(usuario);
     }
 
 
 
     @Override
-    public void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) {
-
+    public void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws UsuarioException {
+        Optional<Usuario> usuario = usuarioRepo.findByEmail(restablecerPasswordDto.email());
+        if (usuario.isPresent()) {
+            usuario.get().setPassword(restablecerPasswordDto.password());
+            usuarioRepo.save(usuario.get());
+        }else {
+            throw new UsuarioException("el correo ingresado no existe");
+        }
     }
 
     @Override
@@ -55,8 +83,12 @@ public class AuntentificacionImplement implements AutentificacionService {
         String codigo= generarCodigoActivacion();
         EmailServicio enviarEmail = new EmailServicioImp();
         String asunto = "Solicitud cambio de contraseña";
-        String cuerpo = "su codigo de confirmacion es: "+ codigo;
+        String cuerpo = "su codigoActivacion de confirmacion es: "+ codigo;
         enviarEmail.enviarCorreo(new EmailDto(asunto,cuerpo,email));
+
+
+        // esto debemos pensarlo mejor porque tin como lo hariamos
+
     }
 
 
@@ -64,22 +96,47 @@ public class AuntentificacionImplement implements AutentificacionService {
 
     @Override
     public void activarCuenta(ActivarCuentaDto activarCuentaDto) throws Exception {
-        if(!verificarIdExiste(activarCuentaDto.id())){
-            throw new UsuarioException("el id  no existe en el sistema");
+        // Obtenemos el usuario y verificamos si existe en la base de datos
+        Optional<Usuario> usuarioOptional = usuarioRepo.findById(new ObjectId(activarCuentaDto.id()));
+        if (usuarioOptional.isEmpty()) {
+            throw new UsuarioException("El ID no existe en el sistema");
         }
-        String codigo = obtenerCodigo(activarCuentaDto.id());
-        // (codigo.equals(activarCuentaDto.codigo()));
+
+        Usuario usuario = usuarioOptional.get();
+        CodigoValidacion codigoValidacion = usuario.getCodigoValidacion();
+
+        if (codigoValidacion == null) {
+            throw new UsuarioException("El código no existe en el sistema");
+        }
+
+        // Verificamos si el código de validación ha vencido
+        if (isCodVen(codigoValidacion)) {
+            throw new UsuarioException("El código ingresado ya venció");
+        }
+
+        // Verificamos si el código es correcto
+        if (!codigoValidacion.getCodigo().equals(activarCuentaDto.codigoActivacion().codigo())){
+            throw new UsuarioException("El código de confirmación no es correcto");
+        }
+
+        // Eliminamos el código de validación del usuario
+        eliminarCodigo(usuario);
     }
 
-    private String obtenerCodigo(@NotBlank String id) {
-        return "hola";
+    private void eliminarCodigo(Usuario usuario) {
+        //eliminamos el atributo codigoActivacion ya no es necesario
+        usuario.setCodigoValidacion(null);
+        usuario.setEstadoUsuario(EstadoUsuario.ACTIVO);
+        usuarioRepo.save(usuario);
     }
 
-    private boolean verificarIdExiste(@NotBlank String id) {
-        return true;
+    private boolean isCodVen(CodigoValidacion codigoValidacion) {
+        // Compara si el código ha vencido
+        LocalDateTime limite = LocalDateTime.now().minusMinutes(15);
+        return codigoValidacion.getHoraCreacion().isBefore(limite);
     }
 
-
+    // metodo creado para generar El codigoActivacion de Activacion del usuario
     private String generarCodigoActivacion() {
         String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"; // Caracteres posibles
         Random rand = new Random();
@@ -94,7 +151,8 @@ public class AuntentificacionImplement implements AutentificacionService {
     }
 
     private boolean existeEmail(String email){
-        //return usuarioRepo.findByEmail(email).isPresent();
-        return true;
+        return usuarioRepo.findByEmail(email).isPresent();
     }
+
+
 }
