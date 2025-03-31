@@ -1,0 +1,24 @@
+package co.edu.uniquindio.repositorios;
+
+import co.edu.uniquindio.model.Reporte;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface ReportesRepo extends MongoRepository<Reporte, ObjectId> {
+
+    // 1. Obtener los reportes dentro de un radio específico de una ubicación
+    @Query("{'ubicacion.latitud': ?0, 'ubicacion.altitud': ?1, 'ubicacion.radio': {$gte: ?2}}")
+    List<Reporte> findByUbicacionWithinRadius(float latitud, float altitud, float radio);
+
+    // 2. Obtener un reporte específico por su ID
+    Optional<Reporte> findById(ObjectId id);
+
+    // 3. Obtener todos los reportes (aunque MongoRepository ya lo tiene por defecto)
+    List<Reporte> findAll();
+}
