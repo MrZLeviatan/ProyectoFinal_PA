@@ -27,7 +27,8 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.apache.commons:commons-email2-jakarta:2.0.0-M1")
+    implementation("org.simplejavamail:simple-java-mail:8.12.5")
+    implementation("org.simplejavamail:batch-module:8.12.5")
 
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
