@@ -2,7 +2,6 @@ package co.edu.uniquindio.mapper;
 
 import co.edu.uniquindio.dto.comentario.ComentarioDTO;
 import co.edu.uniquindio.model.Comentario;
-import org.bson.types.ObjectId;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

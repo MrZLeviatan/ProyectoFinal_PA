@@ -2,9 +2,7 @@ package co.edu.uniquindio.mapper;
 
 import co.edu.uniquindio.dto.moderador.CategoriaDTO;
 import co.edu.uniquindio.model.Categoria;
-import org.bson.types.ObjectId;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 import java.util.List;
 
