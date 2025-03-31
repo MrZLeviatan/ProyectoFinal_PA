@@ -94,6 +94,7 @@ public class AuntentificacionImplement implements AutentificacionService {
     }
 
     private boolean existeEmail(String email){
-        return usuarioRepo.findByEmail(email).isPresent();
+        //return usuarioRepo.findByEmail(email).isPresent();
+        return true;
     }
 }
