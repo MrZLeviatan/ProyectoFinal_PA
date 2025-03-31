@@ -9,12 +9,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Setter
 @NoArgsConstructor
-@Document(collection = "usuarios") // Se guarda en la colección "usuarios"
+@Document(collection = "usuarios")
+@ToString
 public class Usuario extends Persona{
 
     @Id
@@ -23,10 +24,11 @@ public class Usuario extends Persona{
     private String password;
     private Rol rol;
     private EstadoUsuario estadoUsuario;
-    @DBRef private List<Notificacion> notificaciones; // Referencia a Notificaciones en otra colección
+    @DBRef private List<Notificacion> notificaciones;
     @DBRef private List<Reporte> reportes;
     @DBRef private List<Reporte> listaReportesFavorito;
     private CodigoValidacion codigoValidacion;
+    private LocalDateTime fechaRegistro;
 
     public Usuario(String nombre, String direccion, Ciudad ciudad, String email, String password, Rol rol, EstadoUsuario estadoUsuario, List<Notificacion> notificaciones, List<Reporte> reportes, List<Reporte> listaReportesFavorito, CodigoValidacion codigoValidacion) {
         super(nombre, direccion, ciudad);
@@ -38,5 +40,85 @@ public class Usuario extends Persona{
         this.reportes = reportes;
         this.listaReportesFavorito = listaReportesFavorito;
         this.codigoValidacion = codigoValidacion;
+    }
+
+    public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Rol getRol() {
+        return rol;
+    }
+
+    public void setRol(Rol rol) {
+        this.rol = rol;
+    }
+
+    public EstadoUsuario getEstadoUsuario() {
+        return estadoUsuario;
+    }
+
+    public void setEstadoUsuario(EstadoUsuario estadoUsuario) {
+        this.estadoUsuario = estadoUsuario;
+    }
+
+    public List<Notificacion> getNotificaciones() {
+        return notificaciones;
+    }
+
+    public void setNotificaciones(List<Notificacion> notificaciones) {
+        this.notificaciones = notificaciones;
+    }
+
+    public List<Reporte> getReportes() {
+        return reportes;
+    }
+
+    public void setReportes(List<Reporte> reportes) {
+        this.reportes = reportes;
+    }
+
+    public List<Reporte> getListaReportesFavorito() {
+        return listaReportesFavorito;
+    }
+
+    public void setListaReportesFavorito(List<Reporte> listaReportesFavorito) {
+        this.listaReportesFavorito = listaReportesFavorito;
+    }
+
+    public CodigoValidacion getCodigoValidacion() {
+        return codigoValidacion;
+    }
+
+    public void setCodigoValidacion(CodigoValidacion codigoValidacion) {
+        this.codigoValidacion = codigoValidacion;
+    }
+
+    public LocalDateTime getFechaRegistro() {
+        return fechaRegistro;
+    }
+
+    public void setFechaRegistro(LocalDateTime fechaRegistro) {
+        this.fechaRegistro = fechaRegistro;
     }
 }
