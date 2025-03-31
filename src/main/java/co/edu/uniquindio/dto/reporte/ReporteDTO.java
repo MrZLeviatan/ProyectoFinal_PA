@@ -18,8 +18,7 @@ public record ReporteDTO(
         CategoriaDTO categoria,
         List<ComentarioDTO> comentarios,
         EstadoReporte verificado, // Admin verification
-        List<HistorialEstadoDTO> historial,
-        String foto,
+        List<String> fotos,
         int numeroImportancia,
         EstadoSeveridad severidad
 ) {
