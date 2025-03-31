@@ -11,13 +11,13 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface UsuarioMapper {
 
-    @Mapping(target = "rol", constant = "USUARIO")
-    @Mapping(target = "estadoUsuario", constant = "INACTIVO")
-    Usuario toDocument(RegistrarUsuarioDto usuarioDTO);
-
-    UsuarioDTO toDTO(Usuario usuario);
-
-    void toDocument(EditarUsuarioDto editarUsuarioDTO, @MappingTarget Usuario usuario);
+//    @Mapping(target = "rol", constant = "USUARIO")
+//    @Mapping(target = "estadoUsuario", constant = "INACTIVO")
+//    Usuario toDocument(RegistrarUsuarioDto usuarioDTO);
+//
+//    RegistrarUsuarioDto toDTO(Usuario usuario);
+//
+//    void toDocument(EditarUsuarioDto editarUsuarioDTO, @MappingTarget Usuario usuario);
 
 
 
