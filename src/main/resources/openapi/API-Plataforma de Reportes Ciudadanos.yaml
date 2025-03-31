@@ -1839,7 +1839,7 @@ components:
         emailUsuario:
           type: string
           format: email
-          description: Email del usuario que solicita el codigo
+          description: Email del usuario que solicita el codigoActivacion
         fechaCreacion:
           type: string
           format: date-time
