@@ -12,7 +12,7 @@ public interface AutentificacionService {
 
     void crearUsuario(RegistrarUsuarioDto usuarioDTO) throws UsuarioException;
 
-    void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto);
+    void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws UsuarioException;
 
     void solicitarRestablecer(@Valid String email) throws Exception;
 
