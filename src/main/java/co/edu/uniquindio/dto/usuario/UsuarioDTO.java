@@ -13,12 +13,8 @@ public record UsuarioDTO(
         Ciudad ciudad,
         String id,
         String email,
-        String password,
-        Rol rol,
-        EstadoUsuario estadoUsuario,
         List<NotificacionDTO> notificaciones,
         List<ReporteDTO> reportes,
-        List<ReporteDTO> listaReportesFavorito,
-        CodigoValidacionDTO codigoValidacion
+        List<ReporteDTO> listaReportesFavorito
 ) {
 }
