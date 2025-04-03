@@ -6,6 +6,7 @@ import co.edu.uniquindio.dto.RestablecerPasswordDto;
 import co.edu.uniquindio.dto.usuario.EditarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.dto.usuario.*;
+import jakarta.validation.Valid;
 
 // Interfaz que define el contrato para las operaciones relacionadas con usuarios.
 public interface UsuarioService {
@@ -50,4 +51,9 @@ public interface UsuarioService {
     void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws Exception;
 
 
+    void crearUsuario(@Valid RegistrarUsuarioDto usuarioDTO);
+
+    void solicitarRestablecer(@Valid String email);
+
+    void activarCuenta(@Valid ActivarCuentaDto activarCuentaDto);
 }

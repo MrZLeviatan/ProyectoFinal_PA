@@ -48,5 +48,20 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     }
 
+    @Override
+    public void crearUsuario(RegistrarUsuarioDto usuarioDTO) {
+
+    }
+
+    @Override
+    public void solicitarRestablecer(String email) {
+
+    }
+
+    @Override
+    public void activarCuenta(ActivarCuentaDto activarCuentaDto) {
+
+    }
+
 
 }
