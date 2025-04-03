@@ -7,6 +7,8 @@ import co.edu.uniquindio.dto.usuario.ActivarCuentaDto;
 import co.edu.uniquindio.dto.usuario.EditarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.RegistrarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
+import co.edu.uniquindio.mapper.UsuarioMapper;
+import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -16,13 +18,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuarioService {
 
-    private final MongoTemplate mongoTemplate;
+    UsuarioRepo usuarioRepo;
+    UsuarioMapper usuarioMapper;
 
-
-    @Override
-    public void registrarUsuario(RegistrarUsuarioDto usuario) throws Exception {
-
-    }
 
     @Override
     public void eliminarUsuario(EliminarCuentaDto cuentaDto) throws Exception {
@@ -44,23 +42,11 @@ public class UsuarioServiceImpl implements UsuarioService {
         return null;
     }
 
-    @Override
-    public void solicitudRecuperarPassword(String email) throws Exception {
-
-    }
-
-    @Override
-    public void loginUsuario(LoginDto loginDto) throws Exception {
-
-    }
 
     @Override
     public void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws Exception {
 
     }
 
-    @Override
-    public void activarCuenta(ActivarCuentaDto activarCuentaDto) throws Exception {
 
-    }
 }

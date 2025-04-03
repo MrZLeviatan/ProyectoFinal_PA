@@ -1,10 +1,8 @@
-package co.edu.uniquindio.model;
+package co.edu.uniquindio.model.documentos;
 
 import co.edu.uniquindio.model.enums.EstadoNotificacion;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 
 @AllArgsConstructor

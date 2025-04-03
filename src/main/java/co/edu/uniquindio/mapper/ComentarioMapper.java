@@ -1,7 +1,7 @@
 package co.edu.uniquindio.mapper;
 
 import co.edu.uniquindio.dto.comentario.ComentarioDTO;
-import co.edu.uniquindio.model.Comentario;
+import co.edu.uniquindio.model.documentos.Comentario;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

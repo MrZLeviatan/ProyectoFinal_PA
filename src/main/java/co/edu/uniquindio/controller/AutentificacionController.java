@@ -26,31 +26,4 @@ public class AutentificacionController {
         return ResponseEntity.status(200).body(new MensajeDTO<>(false, "Inicio de sesión exitoso"));
     }
 
-    // Crear usuario
-    @PostMapping("/crearUsuario")
-    public ResponseEntity<MensajeDTO<String>> crearUsuario(@Valid @RequestBody RegistrarUsuarioDto usuarioDTO ) throws Exception{
-        autentificacionService.crearUsuario(usuarioDTO);
-        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Usuario creado"));
-    }
-
-    // Solicitar restablecimiento de contraseña
-    @PutMapping("/solicitarRestablecer")
-    public ResponseEntity<MensajeDTO<String>> solicitarRestablecer(@Valid @RequestBody String email ) throws Exception{
-        autentificacionService.solicitarRestablecer(email);
-        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Restablecer"));
-    }
-
-    // Restablecer contraseña
-    @PostMapping("/restablecerPassword")
-    public ResponseEntity<MensajeDTO<String>> restablecerPassword(@Valid @RequestBody RestablecerPasswordDto restablecerPasswordDto ) throws Exception{
-        autentificacionService.restablecerPassword(restablecerPasswordDto);
-        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Password restablecida"));
-    }
-
-    // Activar cuenta
-    @PostMapping("/activarCuenta")
-    public ResponseEntity<MensajeDTO<String>> autentificarCuenta(@Valid @RequestBody ActivarCuentaDto activarCuentaDto ) throws Exception{
-        autentificacionService.activarCuenta(activarCuentaDto);
-        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Cuenta activada"));
-    }
 }

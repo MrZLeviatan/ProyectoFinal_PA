@@ -1,4 +1,4 @@
-package co.edu.uniquindio.model;
+package co.edu.uniquindio.model.vo;
 
 import lombok.*;
 

@@ -1,7 +1,7 @@
 package co.edu.uniquindio.mapper;
 
 import co.edu.uniquindio.dto.reporte.ReporteDTO;
-import co.edu.uniquindio.model.Reporte;
+import co.edu.uniquindio.model.documentos.Reporte;
 import org.mapstruct.Mapper;
 
 

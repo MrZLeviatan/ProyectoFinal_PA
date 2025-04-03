@@ -1,12 +1,12 @@
-package co.edu.uniquindio.model;
+package co.edu.uniquindio.model.documentos;
 
+import co.edu.uniquindio.model.vo.HistorialEstado;
+import co.edu.uniquindio.model.vo.Ubicacion;
 import co.edu.uniquindio.model.enums.EstadoReporte;
 import co.edu.uniquindio.model.enums.EstadoResulto;
 import co.edu.uniquindio.model.enums.EstadoSeveridad;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;

@@ -2,16 +2,12 @@ package co.edu.uniquindio.mapper;
 
 import co.edu.uniquindio.dto.usuario.RegistrarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
-import co.edu.uniquindio.model.Usuario;
+import co.edu.uniquindio.model.documentos.Usuario;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = {NotificacionMapper.class, ReporteMapper.class, ObjectIdMapper.class})
 public interface UsuarioMapper {
-
-
-
-
 
     // mapeo del usuario para registrarlo
     @Mapping(target = "rol", constant = "USUARIO")

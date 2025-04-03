@@ -1,7 +1,7 @@
 package co.edu.uniquindio.mapper;
 
 import co.edu.uniquindio.dto.usuario.CodigoValidacionDTO;
-import co.edu.uniquindio.model.CodigoValidacion;
+import co.edu.uniquindio.model.vo.CodigoValidacion;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

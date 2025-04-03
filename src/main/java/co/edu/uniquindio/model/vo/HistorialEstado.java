@@ -1,5 +1,6 @@
-package co.edu.uniquindio.model;
+package co.edu.uniquindio.model.vo;
 
+import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoReporte;
 import lombok.*;
 

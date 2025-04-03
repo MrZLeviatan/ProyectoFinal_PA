@@ -1,10 +1,8 @@
 package co.edu.uniquindio.repositorios;
 
-import co.edu.uniquindio.model.Usuario;
-import com.fasterxml.jackson.databind.introspect.AnnotationCollector;
+import co.edu.uniquindio.model.documentos.Usuario;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

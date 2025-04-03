@@ -1,22 +1,23 @@
-package co.edu.uniquindio.model;
+package co.edu.uniquindio.model.documentos;
 
+import co.edu.uniquindio.model.vo.CodigoValidacion;
 import co.edu.uniquindio.model.enums.Ciudad;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
 import co.edu.uniquindio.model.enums.Rol;
+import co.edu.uniquindio.model.vo.Persona;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
 @Document(collection = "usuarios")
 @ToString
-public class Usuario extends Persona{
+public class Usuario extends Persona {
 
     @Id
     private ObjectId id;

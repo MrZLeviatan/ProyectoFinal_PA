@@ -1,7 +1,7 @@
 package co.edu.uniquindio.mapper;
 
 import co.edu.uniquindio.dto.modeloDTO.NotificacionDTO;
-import co.edu.uniquindio.model.Notificacion;
+import co.edu.uniquindio.model.documentos.Notificacion;
 import org.mapstruct.Mapper;
 
 

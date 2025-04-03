@@ -2,7 +2,10 @@ package co.edu.uniquindio.controller;
 
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.MensajeDTO;
+import co.edu.uniquindio.dto.RestablecerPasswordDto;
+import co.edu.uniquindio.dto.usuario.ActivarCuentaDto;
 import co.edu.uniquindio.dto.usuario.EditarUsuarioDto;
+import co.edu.uniquindio.dto.usuario.RegistrarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.services.UsuarioService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -50,6 +53,33 @@ public class UsuarioController {
     }
 
 
+    // Crear usuario
+    @PostMapping
+    public ResponseEntity<MensajeDTO<String>> crearUsuario(@Valid @RequestBody RegistrarUsuarioDto usuarioDTO ) throws Exception{
+        usuarioService.crearUsuario(usuarioDTO);
+        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Usuario creado"));
+    }
+
+    // Solicitar restablecimiento de contraseña
+    @PostMapping("/codigoVerificacion")
+    public ResponseEntity<MensajeDTO<String>> solicitarRestablecer(@Valid @RequestBody String email ) throws Exception{
+        usuarioService.solicitarRestablecer(email);
+        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Restablecer"));
+    }
+
+    // Restablecer contraseña
+    @PutMapping("/password")
+    public ResponseEntity<MensajeDTO<String>> restablecerPassword(@Valid @RequestBody RestablecerPasswordDto restablecerPasswordDto ) throws Exception{
+        usuarioService.restablecerPassword(restablecerPasswordDto);
+        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Password restablecida"));
+    }
+
+    // Activar cuenta
+    @PutMapping("/estado")
+    public ResponseEntity<MensajeDTO<String>> autentificarCuenta(@Valid @RequestBody ActivarCuentaDto activarCuentaDto ) throws Exception{
+        usuarioService.activarCuenta(activarCuentaDto);
+        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Cuenta activada"));
+    }
 
 
 }
