@@ -80,7 +80,7 @@ public class JWTFilter extends OncePerRequestFilter {
     // Método auxiliar para extraer el token JWT del encabezado "Authorization"
     private String getToken(HttpServletRequest req) {
         String header = req.getHeader("Authorization");
-        
+
         // Verifica que el encabezado comience con "Bearer " y extrae el token
         return header != null && header.startsWith("Bearer ") ? header.replace("Bearer ", "") : null;
     }
