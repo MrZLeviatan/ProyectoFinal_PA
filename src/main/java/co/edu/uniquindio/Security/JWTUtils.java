@@ -10,7 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
 
-@Component // Anotación de Spring que indica que esta clase es un componente manejado por el contenedor
+@Component
 public class JWTUtils {
 
     // Método para generar un token JWT
