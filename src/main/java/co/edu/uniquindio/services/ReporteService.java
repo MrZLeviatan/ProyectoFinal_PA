@@ -77,7 +77,7 @@ public interface ReporteService {
      * @param reporte Contiene la información del reporte que será marcado como resuelto.
      * @throws Exception Si el reporte no existe o si ocurre un error en el proceso.
      */
-    void marcarReporteResuelto(MarcarReporteResueltoDto reporte) throws Exception;
+    void marcarReporteResuelto(MarcarReporteDto reporte) throws Exception;
 
     /**
      * Quita la marca de resuelto de un reporte.
