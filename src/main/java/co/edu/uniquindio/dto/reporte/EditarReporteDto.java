@@ -6,12 +6,14 @@ import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
 
-public record EditarReporteDto(
+import java.util.List;
 
+public record EditarReporteDto(
+        @NotBlank String idReporte,
         @NotBlank @Length(max = 100) String titulo,
         @NotNull UbicacionDTO ubicacion,
         @NotBlank CategoriaDTO categoria,
-        @NotBlank @URL String foto // URL de la imagen
+        @NotBlank @URL List<String> fotos // URL de la imagen
 
 ) {
 }
