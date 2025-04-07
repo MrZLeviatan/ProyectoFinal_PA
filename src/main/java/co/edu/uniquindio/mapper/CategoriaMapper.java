@@ -1,6 +1,7 @@
 package co.edu.uniquindio.mapper;
 
 import co.edu.uniquindio.dto.moderador.CategoriaDTO;
+import co.edu.uniquindio.dto.moderador.CrearCategoriaDto;
 import co.edu.uniquindio.model.documentos.Categoria;
 import org.mapstruct.Mapper;
 
@@ -8,8 +9,8 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", uses ={ObjectIdMapper.class})
 public interface CategoriaMapper {
-
-
+    //transformar crearCategoriaDTO en Categoria
+    Categoria toCategoria(CrearCategoriaDto categoriaDto);
     // Mapeo de Categoria a CategoriaDTO
     CategoriaDTO toCategoriaDTO(Categoria categoria);
 
