@@ -7,7 +7,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@NoArgsConstructor
+
 @Document(collection = "categorias")
 public class Categoria {
 
@@ -17,7 +17,16 @@ public class Categoria {
     private String nombre;
     private String descripcion;
 
+    public Categoria() {
+    }
+
     public Categoria(String nombre, String descripcion) {
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+    }
+
+    public Categoria(ObjectId id, String nombre, String descripcion) {
+        this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
     }

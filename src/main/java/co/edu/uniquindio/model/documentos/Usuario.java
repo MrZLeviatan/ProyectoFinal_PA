@@ -122,4 +122,6 @@ public class Usuario extends Persona {
     public void setFechaRegistro(LocalDateTime fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
     }
+
+
 }

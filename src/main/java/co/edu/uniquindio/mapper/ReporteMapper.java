@@ -1,8 +1,10 @@
 package co.edu.uniquindio.mapper;
 
+import co.edu.uniquindio.dto.reporte.RegistrarReporteDto;
 import co.edu.uniquindio.dto.reporte.ReporteDTO;
 import co.edu.uniquindio.model.documentos.Reporte;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 
 import java.util.List;
@@ -11,6 +13,14 @@ import java.util.List;
 public interface ReporteMapper {
 
 
+    @Mapping(target = "severidad", constant = "BAJA")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "comentarios",expression = "java(new java.util.ArrayList<>())")
+    @Mapping(target = "numeroImportancia", constant = "0")
+    @Mapping(target = "historial",expression = "java(new java.util.ArrayList<>())" )
+    @Mapping(target = "verificado", constant = "PENDIENTE")
+    @Mapping(target = "estadoReporte",constant = "NO_RESUELTO")
+    Reporte toReporte(RegistrarReporteDto reporteDTO);
 
     ReporteDTO toReporteDTO(Reporte reporte);
 
