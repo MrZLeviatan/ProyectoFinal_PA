@@ -17,7 +17,7 @@ public class ReporteImplement implements ReporteService {
 
     @Override
     public void agregarReporte(RegistrarReporteDto reporte) throws Exception {
-        
+
     }
 
     @Override
