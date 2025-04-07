@@ -52,31 +52,5 @@ public class ModeradorController {
         return ResponseEntity.ok(moderadorService.listarUsuarios(nombre, ciudad, pagina, size));
     }
 
-    @PostMapping("/categoria/crear")
-    public ResponseEntity<Void> crearCategoria(@RequestBody CrearCategoriaDto categoriaDto) throws Exception {
-        moderadorService.crearCategoria(categoriaDto);
-        return ResponseEntity.noContent().build();
-    }
 
-    @PutMapping("/categoria/editar")
-    public ResponseEntity<Void> editarCategoria(@RequestBody EditarCategoriaDto editarCategoriaDto) throws Exception {
-        moderadorService.editarCategoria(editarCategoriaDto);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/categoria/eliminar/{id}")
-    public ResponseEntity<Void> eliminarCategoria(@PathVariable String id) throws Exception {
-        moderadorService.eliminarCategoria(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/categoria/obtener/{id}")
-    public ResponseEntity<CategoriaDTO> obtenerCategoriaId(@PathVariable String id) throws Exception {
-        return ResponseEntity.ok(moderadorService.obtenerCategoriaId(id));
-    }
-
-    @GetMapping("/categoria/listar")
-    public ResponseEntity<List<CategoriaDTO>> listarCategorias() throws Exception {
-        return ResponseEntity.ok(moderadorService.listarCategorias());
-    }
 }

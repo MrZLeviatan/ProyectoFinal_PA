@@ -10,6 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface CategoriaRepo extends MongoRepository<Categoria, ObjectId> {
-    Categoria findByNombre(String nombre);
+    Optional<Categoria> findByNombre(String nombre);
     @NotNull Optional<Categoria> findById(@NotNull ObjectId id);
 }

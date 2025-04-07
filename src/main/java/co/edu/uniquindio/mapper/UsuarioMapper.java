@@ -6,6 +6,8 @@ import co.edu.uniquindio.model.documentos.Usuario;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", uses = {NotificacionMapper.class, ReporteMapper.class, ObjectIdMapper.class})
 public interface UsuarioMapper {
 
@@ -27,5 +29,6 @@ public interface UsuarioMapper {
 
 
 
+     List<UsuarioDTO> toUsuarioDTO(List<Usuario> usuarios);
 
 }
