@@ -10,11 +10,4 @@ import jakarta.validation.Valid;
 public interface AutentificacionService {
     void iniciarSesion(LoginDto loginDTO) throws Exception;
 
-    void crearUsuario(RegistrarUsuarioDto usuarioDTO) throws UsuarioException;
-
-    void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws UsuarioException;
-
-    void solicitarRestablecer(@Valid String email) throws Exception;
-
-    void activarCuenta(ActivarCuentaDto activarCuentaDto) throws Exception;
 }
