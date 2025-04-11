@@ -3,6 +3,7 @@ package co.edu.uniquindio.services.impl;
 import co.edu.uniquindio.dto.EmailDto;
 import co.edu.uniquindio.dto.LoginDto;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
+import co.edu.uniquindio.dto.TokenDTO;
 import co.edu.uniquindio.dto.usuario.ActivarCuentaDto;
 import co.edu.uniquindio.dto.usuario.RegistrarUsuarioDto;
 import co.edu.uniquindio.exeptions.UsuarioException;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -39,7 +41,7 @@ public class AuntentificacionImplement implements AutentificacionService {
         if(usuario.getPassword().equals(loginDTO.password())){
             if(usuario.getEstadoUsuario() == EstadoUsuario.ACTIVO){
                 if(usuario.getRol()== Rol.USUARIO){
-                    // aca que se vaya ala vista de un usuario
+                    // aca que se vaya a la vista de un usuario
                 }else {
                     //aca diriamos que se vaya a la vista de un moderador
                 }
@@ -90,7 +92,6 @@ public class AuntentificacionImplement implements AutentificacionService {
         // esto debemos pensarlo mejor porque tin como lo hariamos
 
     }
-
 
 
 
@@ -154,5 +155,30 @@ public class AuntentificacionImplement implements AutentificacionService {
         return usuarioRepo.findByEmail(email).isPresent();
     }
 
+    public TokenDTO login(LoginDto loginDTO) throws Exception {
 
+        Optional<Usuario> optionalUsuario = usuarioRepo.findByEmail(loginDTO.email());
+
+        if (optionalUsuario.isEmpty()) {
+            throw new Exception("El usuario no existe");
+        }
+
+        Usuario usuario = optionalUsuario.get();
+
+        // Verificar si la contraseña es correcta usando el PasswordEncoder
+        if (!passwordEncoder.matches(loginDTO.password(), usuario.getPassword())) {
+            throw new Exception("El usuario no existe");
+        }
+
+        String token = jwtUtils.generateToken(usuario.getId().toString(), crearClaims(usuario));
+        return new TokenDTO(token);
+    }
+
+    private Map<String, String> crearClaims(Usuario usuario) {
+        return Map.of(
+                "email", usuario.getEmail(),
+                "nombre", usuario.getNombre(),
+                "rol", "ROLE_" + usuario.getRol().name()
+        );
+    }
 }

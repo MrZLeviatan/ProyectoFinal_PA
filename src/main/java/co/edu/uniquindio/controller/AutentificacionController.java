@@ -3,6 +3,7 @@ package co.edu.uniquindio.controller;
 import co.edu.uniquindio.dto.LoginDto;
 import co.edu.uniquindio.dto.MensajeDTO;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
+import co.edu.uniquindio.dto.TokenDTO;
 import co.edu.uniquindio.dto.usuario.ActivarCuentaDto;
 import co.edu.uniquindio.dto.usuario.RegistrarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;

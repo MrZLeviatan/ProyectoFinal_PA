@@ -18,3 +18,4 @@ public interface AutentificacionService {
 
     void activarCuenta(ActivarCuentaDto activarCuentaDto) throws Exception;
 }
+
