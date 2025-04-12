@@ -8,6 +8,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.security.core.AuthenticationException;
 import java.io.IOException;
 
+/**
+ * Componente que maneja la autenticación y la autorización en el sistema.
+ * Esta clase implementa AuthenticationEntryPoint para gestionar el acceso no autorizado
+ * y devolver una respuesta personalizada en formato JSON con un mensaje de error
+ * cuando un usuario no autenticado intenta acceder a recursos protegidos.
+ */
 @Component
 public class AuthenticationEntryPoint implements org.springframework.security.web.AuthenticationEntryPoint {
 
