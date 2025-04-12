@@ -1,7 +1,7 @@
 package co.edu.uniquindio.services.impl;
 
 import co.edu.uniquindio.dto.comentario.*;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.mapper.ComentarioMapper;
 import co.edu.uniquindio.model.documentos.Comentario;
 import co.edu.uniquindio.model.documentos.Reporte;
@@ -10,143 +10,105 @@ import co.edu.uniquindio.repositorios.ReporteRepo;
 import co.edu.uniquindio.services.ComentarioService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
+
+import static co.edu.uniquindio.constants.MensajesError.COMENTARIO_NO_ENCONTRADO;
+import static co.edu.uniquindio.constants.MensajesError.REPORTE_NO_ENCONTRADO;
+
 
 @Service
 @RequiredArgsConstructor
 public class ComentarioServiceImplement implements ComentarioService {
-    @Autowired
-    ComentarioRepo comentarioRepo;
-    @Autowired
-    ComentarioMapper comentarioMapper;
-    @Autowired
-    ReporteRepo reporteRepo;
 
+    private final ComentarioRepo comentarioRepo;
+    private final ComentarioMapper comentarioMapper;
+    private final ReporteRepo reporteRepo;
     private final WebSocketNotificationService socketNotificationService;
     private final NotificacionServiceImplement notificacionServiceImplement;
 
-
+    @Transactional
     @Override
-    public void agregarComentario(RegistrarComentarioDto comentario) throws Exception {
+    public void agregarComentario(RegistrarComentarioDto comentario) throws ElementoNoEncontradoException  {
         Comentario nuevoComentario = comentarioMapper.toComentario(comentario);
-        Optional<Reporte> reporte= reporteRepo.findById(new ObjectId(comentario.idReporte()));
-        if (reporte.isPresent()) {
-            reporte.get().getComentarios().add(nuevoComentario);
-            reporteRepo.save(reporte.get());
-            comentarioRepo.save(nuevoComentario);
-            socketNotificationService.notificarClientes(); //notificaciones en tiempo real
-            notificacionServiceImplement.enviarNotificacion(); //notificaciones en caso de que la persona no este concectada
-        }else {
-            throw new ElementoNoEncontradoException("no existe el reporte con id "+ comentario.idReporte());
-        }
+        Reporte reporte = obtenerReportePorId(comentario.idReporte());
+        Comentario cometarioGuardado=  comentarioRepo.save(nuevoComentario);
+        reporte.getComentarios().add(cometarioGuardado);
+        reporteRepo.save(reporte);
+//        String titulo = "Nuevo comentario";
+//        String descripcion = "Se agregó un nuevo comentario al reporte " + comentario.idReporte();
+//        String topic = "/topic/user/" + comentario.idUsuario() + "/reports";;
+//        socketNotificationService.notificarClienteEspecifico(comentario.idUsuario(),new NotificacionDTO());
     }
 
     @Override
-    public void actualizarComentario(EditarComentarioDto comentario) throws Exception {
-        Optional<Comentario>comentarioEditar= comentarioRepo.findById(new ObjectId(comentario.idComentario()));
-        if (comentarioEditar.isPresent()) {
-            Comentario comentario1 = comentarioEditar.get();
-            comentario1.setContenido(comentario.contenido());
-            comentarioRepo.save(comentario1);
-        }else {
-            throw new ElementoNoEncontradoException("no existe el comentario con id"+ comentario.idComentario());
-        }
+    public void actualizarComentario(EditarComentarioDto comentario) throws ElementoNoEncontradoException {
+        Comentario comentarioExistente = obtenerComentarioPorId(comentario.idComentario());
+        comentarioExistente.setContenido(comentario.contenido());
+        comentarioRepo.save(comentarioExistente);
     }
 
     @Override
-    public void eliminarComentario(EliminarComentarioDto comentario) throws Exception {
-        Optional<Comentario>comentarioEditar= comentarioRepo.findById(new ObjectId(comentario.idComentario()));
-        if (comentarioEditar.isPresent()) {
-            Comentario comentario1 = comentarioEditar.get();
-            Optional<Reporte> reporte = reporteRepo.findById(comentario1.getIdReporte());
-            if (reporte.isPresent()) {
-                reporte.get().getComentarios().removeIf(c-> c.getIdComentario().equals(comentario1.getIdComentario()));
-                reporteRepo.save(reporte.get());
-                if(!comentario1.getComentarios().isEmpty()) {
-                    eliminarHijos(comentario1);
-                }else {
-                    comentarioRepo.delete(comentario1);
-                }
-            }
-        }else {
-            throw new ElementoNoEncontradoException("no existe el comentario con id"+ comentario.idComentario());
+    public void eliminarComentario(EliminarComentarioDto comentario) throws ElementoNoEncontradoException {
+        Comentario comentarioAEliminar = obtenerComentarioPorId(comentario.idComentario());
+        eliminarHijos(comentarioAEliminar);
+        Optional<Reporte> reporteOpt = reporteRepo.findById(comentarioAEliminar.getIdReporte());
+        if (reporteOpt.isPresent()) {
+            Reporte reporte = reporteOpt.get();
+            reporte.getComentarios().removeIf(c -> c.getId().equals(comentarioAEliminar.getId()));
+            reporteRepo.save(reporte);
         }
+        comentarioRepo.delete(comentarioAEliminar);
     }
-
-
-
     @Override
-    public ComentarioDTO buscarComentario(String idComentario) throws Exception {
-        Optional<Comentario> comentario = comentarioRepo.findById(new ObjectId(idComentario));
-        if (comentario.isPresent()) {
-            return comentarioMapper.toComentarioDTO(comentario.get());
-        }else {
-            throw new ElementoNoEncontradoException("no existe el comentario con id"+ idComentario);
-        }
+    public ComentarioDTO buscarComentario(String idComentario) throws ElementoNoEncontradoException {
+        Comentario comentario = obtenerComentarioPorId(idComentario);
+        return comentarioMapper.toComentarioDTO(comentario);
     }
-
     @Override
-    public List<ComentarioDTO> buscarComentariosReporte(String idReporte) throws Exception {
-        Optional<Reporte> reporte = reporteRepo.findById(new ObjectId(idReporte));
-        if (reporte.isPresent()) {
-            Reporte reporte1 = reporte.get();
-            List<Comentario> comentarios = reporte1.getComentarios();
-            return comentarioMapper.toComentarioDTOList(comentarios);
-        }else{
-            throw new ElementoNoEncontradoException("no existe el comentario con id"+ idReporte);
-        }
+    public List<ComentarioDTO> buscarComentariosReporte(String idReporte) throws ElementoNoEncontradoException {
+        Reporte reporte = obtenerReportePorId(idReporte);
+        return comentarioMapper.toComentarioDTOList(reporte.getComentarios());
     }
-
-
     @Override
-    public void agregarRespuestaComentario(RespuestaComentarioDto respuestaComentario) throws Exception {
-        ObjectId idPadre = new ObjectId(respuestaComentario.idComentario());
-        Optional<Comentario> comentarioOpt = comentarioRepo.findById(idPadre);
+    public void agregarRespuestaComentario(RespuestaComentarioDto respuestaComentario) throws ElementoNoEncontradoException {
+        Comentario comentarioPadre = obtenerComentarioPorId(respuestaComentario.idComentario());
 
-        if (comentarioOpt.isEmpty()) {
-            throw new ElementoNoEncontradoException("No existe el comentario con id " + respuestaComentario.idComentario());
-        }
-
-        Comentario comentarioPadre = comentarioOpt.get();
-
-        RegistrarComentarioDto registrarComentarioDto = new RegistrarComentarioDto(
+        RegistrarComentarioDto dto = new RegistrarComentarioDto(
                 respuestaComentario.contenido(),
                 respuestaComentario.idReporte(),
                 respuestaComentario.idUsuario()
         );
 
-        Comentario respuesta = comentarioMapper.toComentario(registrarComentarioDto);
-        respuesta.setIdComentario(idPadre);
+        Comentario respuesta = comentarioMapper.toComentario(dto);
+        respuesta.setIdComentario(comentarioPadre.getId());
 
         Comentario respuestaGuardada = comentarioRepo.save(respuesta);
         comentarioPadre.getComentarios().add(respuestaGuardada);
-
         comentarioRepo.save(comentarioPadre);
     }
-
-
     @Override
-    public List<ComentarioDTO> buscarRespuestaComentario(String idComentario) throws Exception {
-        Optional<Comentario> comentarioOpt = comentarioRepo.findById(new ObjectId(idComentario));
-        if (comentarioOpt.isPresent()) {
-            List<Comentario> comentarios = comentarioOpt.get().getComentarios();
-            return comentarioMapper.toComentarioDTOList(comentarios);
-        }else {
-            throw new ElementoNoEncontradoException("No existe el comentario con id"+ idComentario);
-        }
+    public List<ComentarioDTO> buscarRespuestaComentario(String idComentario) throws ElementoNoEncontradoException {
+        Comentario comentario = obtenerComentarioPorId(idComentario);
+        return comentarioMapper.toComentarioDTOList(comentario.getComentarios());
     }
 
-
     private void eliminarHijos(Comentario comentarioPadre) {
-        List<Comentario> hijos = comentarioPadre.getComentarios();
-
+        List<Comentario> hijos = comentarioRepo.findByIdComentario(comentarioPadre.getId());
         for (Comentario hijo : hijos) {
-            Optional<Comentario> hijoCompleto = comentarioRepo.findById(hijo.getId());
-            hijoCompleto.ifPresent(this::eliminarHijos); // llamada recursiva
-            hijoCompleto.ifPresent(comentarioRepo::delete);
+            eliminarHijos(hijo); // Recursividad: elimina los hijos del hijo
+            comentarioRepo.delete(hijo); // Elimina el hijo actual
         }
+    }
+    private Comentario obtenerComentarioPorId(String id) throws ElementoNoEncontradoException {
+        return comentarioRepo.findById(new ObjectId(id))
+                .orElseThrow(() -> new ElementoNoEncontradoException(COMENTARIO_NO_ENCONTRADO + id));
+    }
+
+    private Reporte obtenerReportePorId(String id)throws ElementoNoEncontradoException {
+        return reporteRepo.findById(new ObjectId(id))
+                .orElseThrow(() -> new ElementoNoEncontradoException(REPORTE_NO_ENCONTRADO + id));
     }
 }

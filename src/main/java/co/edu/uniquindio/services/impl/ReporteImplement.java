@@ -3,8 +3,8 @@ package co.edu.uniquindio.services.impl;
 import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.dto.reporte.*;
 
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.PermisoDenegadoException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.PermisoDenegadoException;
 import co.edu.uniquindio.mapper.ReporteMapper;
 import co.edu.uniquindio.model.documentos.Categoria;
 import co.edu.uniquindio.model.documentos.Reporte;
@@ -34,13 +34,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReporteImplement implements ReporteService {
 
-    @Autowired
-    ReporteRepo reporteRepo;
-    @Autowired
-    ReporteMapper reporteMapper;
-    @Autowired
-    UsuarioRepo usuarioRepo;
-
+    private final ReporteRepo reporteRepo;
+    private final ReporteMapper reporteMapper;
+    private final UsuarioRepo usuarioRepo;
     private final CategoriaRepo categoriaRepo;
 
     @Override
@@ -61,6 +57,9 @@ public class ReporteImplement implements ReporteService {
 
         usuarioRepo.save(usuario);
     }
+
+
+
 
     @Override
     public void actualizarReporte(EditarReporteDto reporteDto) throws Exception {

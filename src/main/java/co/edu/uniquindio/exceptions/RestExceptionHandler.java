@@ -1,4 +1,4 @@
-package co.edu.uniquindio.exeptions;
+package co.edu.uniquindio.exceptions;
 import co.edu.uniquindio.dto.MensajeDTO;
 import co.edu.uniquindio.dto.ValidacionDTO;
 import org.springframework.http.ResponseEntity;

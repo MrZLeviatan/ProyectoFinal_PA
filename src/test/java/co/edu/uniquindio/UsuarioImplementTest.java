@@ -3,7 +3,7 @@ package co.edu.uniquindio;
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
 import co.edu.uniquindio.dto.usuario.*;
-import co.edu.uniquindio.exeptions.*;
+import co.edu.uniquindio.exceptions.*;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.Ciudad;
 import co.edu.uniquindio.model.enums.EstadoUsuario;

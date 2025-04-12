@@ -1,4 +1,4 @@
-package co.edu.uniquindio.exeptions;
+package co.edu.uniquindio.exceptions;
 
 public class CredencialesInvalidasException extends RuntimeException {
     public CredencialesInvalidasException(String message) {

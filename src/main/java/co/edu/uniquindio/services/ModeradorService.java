@@ -3,9 +3,9 @@ package co.edu.uniquindio.services;
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.moderador.EditarModeradorDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
-import co.edu.uniquindio.exeptions.CiudadNoExisteException;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.RangoPaginaNoPermitidoException;
+import co.edu.uniquindio.exceptions.CiudadNoExisteException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.RangoPaginaNoPermitidoException;
 
 import java.util.List;
 
