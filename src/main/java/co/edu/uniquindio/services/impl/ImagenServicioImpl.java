@@ -17,19 +17,18 @@ public class ImagenServicioImpl implements ImagenServicio {
 
     private final Cloudinary cloudinary;
 
-    @Value("${CLUD_NAME}")
-    String clud_name;
-
-    public ImagenServicioImpl(){
+    public ImagenServicioImpl(
+            @Value("${cloudinary.cloud_name}") String cloudName,
+            @Value("${cloudinary.api_key}") String apiKey,
+            @Value("${cloudinary.api_secret}") String apiSecret
+    ) {
         Map<String, String> config = new HashMap<>();
-        config.put("cloud_name", "SU_CLOUD_NAME");
-        config.put("api_key", "SU_API_KEY");
-        config.put("api_secret", "SU_API_SECRET");
+        config.put("cloud_name", cloudName);
+        config.put("api_key", apiKey);
+        config.put("api_secret", apiSecret);
 
-
-        cloudinary = new Cloudinary(config);
+        this.cloudinary = new Cloudinary(config);
     }
-
 
     @Override
     public Map subirImagen(MultipartFile imagen) throws Exception {
@@ -51,7 +50,5 @@ public class ImagenServicioImpl implements ImagenServicio {
         fos.close();
         return file;
     }
-
-
 }
 
