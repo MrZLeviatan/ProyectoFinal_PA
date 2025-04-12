@@ -3,7 +3,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-
+/**
+ * Representa un código de validación utilizado en procesos de autenticación o verificación.
+ * Contiene el código generado y la fecha y hora de su creación para su validación.
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 public class CodigoValidacion {
