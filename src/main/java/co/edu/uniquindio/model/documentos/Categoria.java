@@ -1,13 +1,13 @@
 package co.edu.uniquindio.model.documentos;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-
+/**
+ * Representa una categoría dentro del sistema.
+ * Esta clase está mapeada a la colección "categorias" en MongoDB.
+ */
 @Document(collection = "categorias")
 public class Categoria {
 
