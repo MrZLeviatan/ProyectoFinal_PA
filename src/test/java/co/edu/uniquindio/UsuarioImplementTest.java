@@ -3,17 +3,13 @@ package co.edu.uniquindio;
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
 import co.edu.uniquindio.dto.usuario.*;
-import co.edu.uniquindio.exeptions.DatoErroneoException;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.ElementoRepetidoException;
-import co.edu.uniquindio.exeptions.UsuarioException;
+import co.edu.uniquindio.exeptions.*;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.Ciudad;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
 import co.edu.uniquindio.model.vo.CodigoValidacion;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.UsuarioService;
-import jdk.jfr.DataAmount;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +83,7 @@ public class UsuarioImplementTest {
     @Test
     public void eliminarUsuarioPasswordIncorrecta() throws Exception {
         EliminarCuentaDto e = new EliminarCuentaDto(String.valueOf(usuario.getId()),"123");
-        assertThrows(DatoErroneoException.class, () -> {
+        assertThrows(CredencialesInvalidasException.class, () -> {
             usuarioService.eliminarUsuario(e);
         });
     }
@@ -240,7 +236,7 @@ public class UsuarioImplementTest {
                 new CodigoValidacionDTO("INCORRECTO", LocalDateTime.now())
         );
 
-        assertThrows(UsuarioException.class, () -> {
+        assertThrows(CodigoIncorrectoException.class, () -> {
             usuarioService.activarCuenta(dto);
         });
     }
