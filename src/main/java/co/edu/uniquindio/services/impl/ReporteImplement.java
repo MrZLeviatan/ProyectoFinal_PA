@@ -3,8 +3,8 @@ package co.edu.uniquindio.services.impl;
 import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.dto.reporte.*;
 
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.PermisoDenegadoException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.PermisoDenegadoException;
 import co.edu.uniquindio.mapper.ReporteMapper;
 import co.edu.uniquindio.model.documentos.Categoria;
 import co.edu.uniquindio.model.documentos.Reporte;
