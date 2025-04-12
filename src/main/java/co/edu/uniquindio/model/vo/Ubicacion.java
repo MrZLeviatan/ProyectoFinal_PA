@@ -2,6 +2,11 @@ package co.edu.uniquindio.model.vo;
 
 import lombok.*;
 
+/**
+ * Representa una ubicación geográfica con su latitud, altitud y radio.
+ * Esta clase almacena los valores necesarios para definir la posición
+ * y el área de cobertura de una ubicación específica.
+ */
 
 @AllArgsConstructor
 @NoArgsConstructor
