@@ -75,14 +75,16 @@ public class CategoriaImplementTest {
     }
 
     @Test
-    public void testEditarCategoriaInexistente() {
+    public void testEditarCategoriaInexistente() throws Exception {
         EditarCategoriaDto editar = new EditarCategoriaDto(
                 new ObjectId().toString(),
                 "Nueva",
                 "Descripción"
         );
+
         assertThrows(ElementoNoEncontradoException.class, () ->
                 categoriaService.editarCategoria(editar));
+
     }
 
     @Test
