@@ -1,8 +1,7 @@
 package co.edu.uniquindio;
 
 import co.edu.uniquindio.dto.comentario.*;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.mapper.ComentarioMapper;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.model.documentos.Comentario;
 import co.edu.uniquindio.model.documentos.Reporte;
 import co.edu.uniquindio.repositorios.ComentarioRepo;
