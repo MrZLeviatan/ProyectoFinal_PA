@@ -2,9 +2,9 @@ package co.edu.uniquindio.services.impl;
 
 import co.edu.uniquindio.Security.JWTUtils;
 import co.edu.uniquindio.dto.LoginDto;
-import co.edu.uniquindio.exeptions.CredencialesInvalidasException;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.UsuarioNoActivadoException;
+import co.edu.uniquindio.exceptions.CredencialesInvalidasException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.UsuarioNoActivadoException;
 import co.edu.uniquindio.dto.TokenDTO;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
@@ -26,7 +26,8 @@ public class AuntentificacionImplement implements AutentificacionService {
     JWTUtils jwtUtils;
 
     @Override
-    public TokenDTO iniciarSesion(LoginDto loginDTO) throws ElementoNoEncontradoException,UsuarioNoActivadoException,CredencialesInvalidasException {
+    public TokenDTO iniciarSesion(LoginDto loginDTO) throws ElementoNoEncontradoException,UsuarioNoActivadoException,
+            CredencialesInvalidasException {
         Optional<Usuario> usuarioOptional= usuarioRepo.findByEmail(loginDTO.email());
         if(usuarioOptional.isEmpty()){
             throw new ElementoNoEncontradoException("El email no existe");
