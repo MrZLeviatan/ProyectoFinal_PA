@@ -10,11 +10,12 @@ import co.edu.uniquindio.repositorios.CategoriaRepo;
 import co.edu.uniquindio.services.CategoriaService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,13 +53,13 @@ public class CategoriaImplement implements CategoriaService {
 
     @Override
     public List<CategoriaDTO> listarCategorias() {
-        return categoriaMapper.toCategoriaDTOList((List<Categoria>) obtenerCategorias().stream().sorted());
+        return categoriaMapper.toCategoriaDTOList(
+                categoriaRepo.findAll().stream()
+                        .sorted(Comparator.comparing(Categoria::getNombre))
+                        .toList()
+        );
     }
 
-    private List<Categoria> obtenerCategorias() {
-
-        return categoriaRepo.findAll();
-    }
 
     private Categoria buscarCategoriaId(String id) {
         Optional<Categoria> categoria= categoriaRepo.findById(new ObjectId(id));

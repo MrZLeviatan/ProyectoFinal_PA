@@ -4,6 +4,7 @@ import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.moderador.EditarModeradorDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.exeptions.CiudadNoExisteException;
+import co.edu.uniquindio.exeptions.CredencialesInvalidasException;
 import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.exeptions.RangoPaginaNoPermitidoException;
 import co.edu.uniquindio.mapper.UsuarioMapper;
@@ -38,8 +39,12 @@ public class ModeradorServiceImplement implements ModeradorService {
     @Override
     public void eliminarModerador(EliminarCuentaDto cuentaDto) throws ElementoNoEncontradoException {
         Usuario usuario= buscarUsuarioId(cuentaDto.id());
-        usuario.setEstadoUsuario(EstadoUsuario.ELIMINADO);
-        usuarioRepo.save(usuario);
+        if(usuario.getPassword().equals(cuentaDto.password())){
+            usuario.setEstadoUsuario(EstadoUsuario.ELIMINADO);
+            usuarioRepo.save(usuario);
+        }else{
+            throw new CredencialesInvalidasException("La contraseña ingresada no coincide");
+        }
     }
 
     private Usuario buscarUsuarioId(@NotBlank String id) {

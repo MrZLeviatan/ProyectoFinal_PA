@@ -46,6 +46,10 @@ public class JWTFilter extends OncePerRequestFilter {
             String username = payload.getPayload().getSubject(); // Usuario
             String role = payload.getPayload().get("rol", String.class); // Rol del usuario
 
+            if (!role.startsWith("ROLE_")) {
+                role = "ROLE_" + role.substring(4); // Convierte ROL_MODERADOR en ROLE_MODERADOR
+            }
+
             // Si aún no hay autenticación en el contexto de seguridad, se crea una
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
