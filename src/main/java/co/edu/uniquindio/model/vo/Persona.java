@@ -3,7 +3,11 @@ package co.edu.uniquindio.model.vo;
 import co.edu.uniquindio.model.enums.Ciudad;
 import lombok.*;
 
-
+/**
+ * Clase abstracta que representa una persona. Contiene información básica como el nombre,
+ * la dirección y la ciudad. Esta clase no se guarda directamente en MongoDB, ya que
+ * es la clase base para otras entidades relacionadas con una persona.
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 // Clase padre SIN @Document (NO se guarda directamente en MongoDB)
