@@ -27,7 +27,6 @@ public class Reporte {
     private EstadoResuelto estadoReporte;
     @DBRef private Categoria categoria;
     @DBRef  private List<Comentario> comentarios;
-    private EstadoReporte verificado; // admin
     private List<HistorialEstado> historial;
     private List<String> fotos; //lista de rutas
     private int numeroImportancia;
@@ -90,13 +89,7 @@ public class Reporte {
         this.comentarios = comentarios;
     }
 
-    public EstadoReporte getVerificado() {
-        return verificado;
-    }
 
-    public void setVerificado(EstadoReporte verificado) {
-        this.verificado = verificado;
-    }
 
     public List<HistorialEstado> getHistorial() {
         return historial;
