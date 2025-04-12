@@ -1,12 +1,16 @@
 package co.edu.uniquindio;
 
 import co.edu.uniquindio.dto.LoginDto;
-import co.edu.uniquindio.exeptions.UsuarioException;
+import co.edu.uniquindio.exeptions.CredencialesInvalidasException;
+import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exeptions.UsuarioNoActivadoException;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.Ciudad;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.AutentificacionService;
+import co.edu.uniquindio.services.impl.AuntentificacionImplement;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -34,23 +38,26 @@ public class AutentificacionImplementTest {
 
     @BeforeEach
     public void setUp() {
-        Optional<Usuario> existente = usuarioRepo.findByEmail(emailValido);
-        if (existente.isEmpty()) {
-            usuario = new Usuario();
-            usuario.setNombre("Prueba Login");
-            usuario.setEmail(emailValido);
-            usuario.setPassword(passwordValida);
-            usuario.setEstadoUsuario(EstadoUsuario.ACTIVO);
-            usuario.setDireccion("Calle Falsa 123");
-            usuario.setCiudad(Ciudad.ARMENIA);
-            usuarioRepo.save(usuario);
-        } else {
-            usuario = existente.get();
-        }
+        usuario = new Usuario();
+        usuario.setNombre("Prueba Login");
+        usuario.setEmail(emailValido);
+        usuario.setPassword(passwordValida);
+        usuario.setEstadoUsuario(EstadoUsuario.ACTIVO);
+        usuario.setDireccion("Calle Falsa 123");
+        usuario.setCiudad(Ciudad.ARMENIA);
+        this.usuario=usuarioRepo.save(usuario);
     }
+
+    @AfterEach
+    public void tearDown() {
+        usuarioRepo.deleteAll();
+    }
+
+
 
     @Test
     public void testInicioSesionExitoso() throws Exception {
+
         LoginDto loginDto = new LoginDto(emailValido, passwordValida);
         assertDoesNotThrow(() -> autentificacionService.iniciarSesion(loginDto));
     }
@@ -58,7 +65,7 @@ public class AutentificacionImplementTest {
     @Test
     public void testEmailNoExiste() {
         LoginDto loginDto = new LoginDto("correo.noexiste@example.com", passwordValida);
-        Exception ex = assertThrows(UsuarioException.class, () ->
+        Exception ex = assertThrows(ElementoNoEncontradoException.class, () ->
                 autentificacionService.iniciarSesion(loginDto)
         );
         assertEquals("El email no existe", ex.getMessage());
@@ -67,10 +74,10 @@ public class AutentificacionImplementTest {
     @Test
     public void testContrasenaIncorrecta() {
         LoginDto loginDto = new LoginDto(emailValido, "claveIncorrecta");
-        Exception ex = assertThrows(UsuarioException.class, () ->
+        Exception ex = assertThrows(CredencialesInvalidasException.class, () ->
                 autentificacionService.iniciarSesion(loginDto)
         );
-        assertEquals("Contraseña incorrecta", ex.getMessage());
+        assertEquals("el usuario no puedo ingresar", ex.getMessage());
     }
 
     @Test
@@ -79,7 +86,7 @@ public class AutentificacionImplementTest {
         usuarioRepo.save(usuario);
 
         LoginDto loginDto = new LoginDto(emailValido, passwordValida);
-        Exception ex = assertThrows(UsuarioException.class, () ->
+        Exception ex = assertThrows(UsuarioNoActivadoException.class, () ->
                 autentificacionService.iniciarSesion(loginDto)
         );
         assertEquals("El usuario debe activarse primero ", ex.getMessage());
