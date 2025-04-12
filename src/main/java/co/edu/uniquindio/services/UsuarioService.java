@@ -13,9 +13,6 @@ import co.edu.uniquindio.exeptions.ElementoRepetidoException;
 // Interfaz que define el contrato para las operaciones relacionadas con usuarios.
 public interface UsuarioService {
 
-
-
-
     /**
      *  Elimina un usuario del sistema en función de su ID y contraseña.
      * @param cuentaDto: Objeto de transferencia de datos que contiene el ID y la contraseña del usuario.
@@ -45,7 +42,6 @@ public interface UsuarioService {
      * @throws Exception: Si el usuario no se encuentra o ocurre un error.
      */
     UsuarioDTO obtenerUsuarioEmail(String email) throws Exception;
-
 
     /**
      * Restablece la contraseña del usuario según la información proporcionada.
