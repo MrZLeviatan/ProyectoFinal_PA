@@ -14,7 +14,6 @@ import co.edu.uniquindio.exeptions.ElementoRepetidoException;
 public interface UsuarioService {
 
 
-    TokenDTO login(LoginDTO loginDTO) throws Exception;
 
 
     /**
