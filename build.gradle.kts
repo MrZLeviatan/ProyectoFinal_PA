@@ -33,6 +33,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
     implementation("org.mapstruct:mapstruct:1.6.3")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 
     compileOnly("org.projectlombok:lombok")
@@ -43,6 +44,8 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
 
 }
 

@@ -10,7 +10,6 @@ public record EditarModeradorDto(
         @NotBlank String id,
         @NotBlank @Length(max = 100) String nombre,
         @NotNull Ciudad ciudad,
-        @NotBlank @Length(max = 100) String direccion,
-        @NotNull EstadoUsuario estadoUsuario
+        @NotBlank @Length(max = 100) String direccion
 ) {
 }

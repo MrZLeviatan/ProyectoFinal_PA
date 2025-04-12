@@ -13,10 +13,10 @@ import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@NonNull
 @Document(collection = "comentarios")
 public class Comentario {
     @Id private ObjectId id;
+    @DBRef private ObjectId idComentario;
     private String contenido; // contenido
     private LocalDateTime fechaComentario; //en que fecha se realizó el comentario
     private ObjectId idUsuario; //quien realizo el comentario
@@ -69,5 +69,13 @@ public class Comentario {
 
     public void setComentarios(List<Comentario> comentarios) {
         this.comentarios = comentarios;
+    }
+
+    public ObjectId getIdComentario() {
+        return idComentario;
+    }
+
+    public void setIdComentario(ObjectId idComentario) {
+        this.idComentario = idComentario;
     }
 }

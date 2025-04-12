@@ -1,31 +1,60 @@
 package co.edu.uniquindio.model.documentos;
 
 import co.edu.uniquindio.model.enums.EstadoNotificacion;
+import co.edu.uniquindio.model.vo.Ubicacion;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
 
 
 @AllArgsConstructor
 @NoArgsConstructor
-
+@Document(collection = "notificaciones")
 public class Notificacion {
-    private String id,idDestinatario,mensaje,fecha,idRemitente,titulo,ubicacionReporte,IDReporteAsociado;
-    private EstadoNotificacion estadoNotificacion;
 
-    public String getId() {
+    @Id private ObjectId id;
+    @DBRef private ObjectId idDestinatario,idRemitente,IDReporteAsociado;
+    private String mensaje,titulo;
+    private Ubicacion ubicacionReporte;
+    private EstadoNotificacion estadoNotificacion;
+    private LocalDateTime fecha;
+
+
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
-    public String getIdDestinatario() {
+    public ObjectId getIdDestinatario() {
         return idDestinatario;
     }
 
-    public void setIdDestinatario(String idDestinatario) {
+    public void setIdDestinatario(ObjectId idDestinatario) {
         this.idDestinatario = idDestinatario;
+    }
+
+    public ObjectId getIdRemitente() {
+        return idRemitente;
+    }
+
+    public void setIdRemitente(ObjectId idRemitente) {
+        this.idRemitente = idRemitente;
+    }
+
+    public ObjectId getIDReporteAsociado() {
+        return IDReporteAsociado;
+    }
+
+    public void setIDReporteAsociado(ObjectId IDReporteAsociado) {
+        this.IDReporteAsociado = IDReporteAsociado;
     }
 
     public String getMensaje() {
@@ -36,22 +65,6 @@ public class Notificacion {
         this.mensaje = mensaje;
     }
 
-    public String getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(String fecha) {
-        this.fecha = fecha;
-    }
-
-    public String getIdRemitente() {
-        return idRemitente;
-    }
-
-    public void setIdRemitente(String idRemitente) {
-        this.idRemitente = idRemitente;
-    }
-
     public String getTitulo() {
         return titulo;
     }
@@ -60,20 +73,12 @@ public class Notificacion {
         this.titulo = titulo;
     }
 
-    public String getUbicacionReporte() {
+    public Ubicacion getUbicacionReporte() {
         return ubicacionReporte;
     }
 
-    public void setUbicacionReporte(String ubicacionReporte) {
+    public void setUbicacionReporte(Ubicacion ubicacionReporte) {
         this.ubicacionReporte = ubicacionReporte;
-    }
-
-    public String getIDReporteAsociado() {
-        return IDReporteAsociado;
-    }
-
-    public void setIDReporteAsociado(String IDReporteAsociado) {
-        this.IDReporteAsociado = IDReporteAsociado;
     }
 
     public EstadoNotificacion getEstadoNotificacion() {
@@ -82,5 +87,13 @@ public class Notificacion {
 
     public void setEstadoNotificacion(EstadoNotificacion estadoNotificacion) {
         this.estadoNotificacion = estadoNotificacion;
+    }
+
+    public LocalDateTime getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDateTime fecha) {
+        this.fecha = fecha;
     }
 }

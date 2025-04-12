@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ReportesRepo extends MongoRepository<Reporte, ObjectId> {
+public interface ReporteRepo extends MongoRepository<Reporte, ObjectId> {
 
     // 1. Obtener los reportes dentro de un radio específico de una ubicación
     @Query("{'ubicacion.latitud': ?0, 'ubicacion.altitud': ?1, 'ubicacion.radio': {$gte: ?2}}")

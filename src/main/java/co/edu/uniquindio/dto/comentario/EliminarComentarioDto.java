@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 
 public record EliminarComentarioDto(
 
-        @NotBlank String idComentario,
-        @NotBlank String password
+        @NotBlank String idComentario
 ) {
 }

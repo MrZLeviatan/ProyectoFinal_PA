@@ -1,17 +1,20 @@
 package co.edu.uniquindio.mapper;
 
-import co.edu.uniquindio.dto.modeloDTO.NotificacionDTO;
+import co.edu.uniquindio.dto.modeloDTO.NotificacionDTOM;
 import co.edu.uniquindio.model.documentos.Notificacion;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 
 import java.util.List;
 //hola
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",uses = {ObjectIdMapper.class,})
 public interface NotificacionMapper {
 
 
-    NotificacionDTO toNotificacionDTO(Notificacion notificacion);
+    @Mapping(target = "CorreoDestinatario", ignore = true)
+    @Mapping(target = "CorreoRemitente", ignore = true)
+    NotificacionDTOM toNotificacionDTO(Notificacion notificacion);
 
-    List<NotificacionDTO> toNotificacionDTOList(List<Notificacion> notificaciones);
+    List<NotificacionDTOM> toNotificacionDTOList(List<Notificacion> notificaciones);
 }
