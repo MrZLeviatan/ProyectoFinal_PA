@@ -9,6 +9,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Interfaz para la gestión de reportes en la base de datos MongoDB.
+ * Extiende MongoRepository para operaciones CRUD básicas.
+ * Incluye métodos personalizados para obtener reportes dentro de un radio específico,
+ * obtener reportes por ID, y obtener todos los reportes.
+ */
 @Repository
 public interface ReporteRepo extends MongoRepository<Reporte, ObjectId> {
 
