@@ -3,6 +3,7 @@ package co.edu.uniquindio.services;
 import co.edu.uniquindio.dto.reporte.HistorialEstadoDTO;
 import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.dto.reporte.*;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 
 import java.util.List;
 
@@ -11,9 +12,9 @@ public interface ReporteService {
     /**
      * Agrega un nuevo reporte al sistema.
      * @param reporte Datos del reporte a registrar.
-     * @throws Exception Sí ocurre un error durante el registro.
+     * @throws ElementoNoEncontradoException Sí ocurre un error durante el registro.
      */
-    void agregarReporte(RegistrarReporteDto reporte) throws Exception;
+    void agregarReporte(RegistrarReporteDto reporte) throws ElementoNoEncontradoException;
 
     /**
      * Actualiza la información de un reporte existente en el sistema.
@@ -25,17 +26,17 @@ public interface ReporteService {
     /**
      * Elimina un reporte del sistema basado en la información proporcionada.
      * @param reporteDto Contiene los datos necesarios para identificar y eliminar el reporte.
-     * @throws Exception Sí ocurre un error durante la eliminación del reporte.
+     * @throws ElementoNoEncontradoException Sí ocurre un error durante la eliminación del reporte.
      */
-    void eliminarReporte(EliminarReporteDto reporteDto) throws Exception;
+    void eliminarReporte(EliminarReporteDto reporteDto) throws ElementoNoEncontradoException;
 
     /**
      * Busca un reporte en el sistema por su ID.
      * @param idReporte Identificador único del reporte a buscar.
      * @return ReporteDTO con la información del reporte encontrado.
-     * @throws Exception Si el reporte no existe o ocurre un error durante la búsqueda.
+     * @throws ElementoNoEncontradoException Si el reporte no existe o ocurre un error durante la búsqueda.
      */
-    ReporteDTO buscarReporte(String idReporte) throws Exception;
+    ReporteDTO buscarReporte(String idReporte) throws ElementoNoEncontradoException;
 
     /**
      * Recupera la lista de todos los reportes registrados en el sistema.

@@ -5,12 +5,14 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Representa un comentario dentro del sistema.
+ * Esta clase es mapeada a la colección "comentarios" en MongoDB.
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(collection = "comentarios")

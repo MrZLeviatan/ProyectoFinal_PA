@@ -14,32 +14,32 @@ public interface ModeradorService {
     /**
      *  Elimina un moderador del sistema en función de su ID y contraseña.
      * @param cuentaDto: Objeto de transferencia de datos que contiene el ID y la contraseña del usuario.
-     * @throws Exception: Si ocurre un error durante la eliminación.
+     * @throws ElementoNoEncontradoException : Si ocurre un error durante la eliminación.
      */
-    void eliminarModerador(EliminarCuentaDto cuentaDto) throws Exception;
+    void eliminarModerador(EliminarCuentaDto cuentaDto) throws ElementoNoEncontradoException;
 
     /**
      * Actualiza la información del moderador en el sistema.
      * @param moderadorAct: Objeto de transferencia de datos que contiene los detalles actualizados del moderador.
-     * @throws Exception: Si ocurre un error durante el proceso de actualización.
+     * @throws ElementoNoEncontradoException: Si ocurre un error durante el proceso de actualización.
      */
-    void actualizarModerador(EditarModeradorDto moderadorAct) throws Exception;
+    void actualizarModerador(EditarModeradorDto moderadorAct) throws ElementoNoEncontradoException;
 
     /**
      * Obtiene un moderador basado en su identificador único.
      * @param id: Identificador único del moderador.
      * @return Objeto que contiene los detalles del moderador.
-     * @throws Exception: Si el usuario no se encuentra oh ocurre un error.
+     * @throws ElementoNoEncontradoException : Si el usuario no se encuentra oh ocurre un error.
      */
-        UsuarioDTO obtenerModeradorId(String id) throws ElementoNoEncontradoException;
+    UsuarioDTO obtenerModeradorId(String id) throws ElementoNoEncontradoException ;
 
     /**
      * Obtiene un moderador basado en su dirección de correo electrónico.
      * @param email: Dirección de correo electrónico del moderador.
      * @return Objeto que contiene los detalles del moderador.
-     * @throws Exception: Si el usuario no se encuentra oh ocurre un error.
+     * @throws ElementoNoEncontradoException : Si el usuario no se encuentra oh ocurre un error.
      */
-    UsuarioDTO obtenerModeradorEmail(String email) throws ElementoNoEncontradoException;
+    UsuarioDTO obtenerModeradorEmail(String email) throws ElementoNoEncontradoException ;
 
     /**
      * Obtiene una lista de usuarios filtrada por nombre y/o ciudad.
@@ -48,11 +48,9 @@ public interface ModeradorService {
      * @param pagina: Número de página (comienza desde 0).
      * @param size: Número de usuarios por página.
      * @return Lista de usuarios que coinciden con los criterios de búsqueda.
-     * @throws Exception: Si ocurre un error durante la obtención.
+     * @throws RangoPaginaNoPermitidoException,CiudadNoExisteException: Si ocurre un error durante la obtención.
      */
-    List<UsuarioDTO> listarUsuarios(String nombre,String ciudad, int pagina, int size) throws RangoPaginaNoPermitidoException, CiudadNoExisteException;
-
-
+    List<UsuarioDTO> listarUsuarios(String nombre,String ciudad, int pagina, int size) throws RangoPaginaNoPermitidoException,CiudadNoExisteException;
 }
 
 

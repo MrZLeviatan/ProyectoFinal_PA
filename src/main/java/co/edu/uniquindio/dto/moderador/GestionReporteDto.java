@@ -5,7 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
-// Sirve como creación del HistorialEstado
+/**
+ * DTO utilizado para gestionar el reporte.
+ * Contiene información sobre el estado anterior y actual del reporte,
+ * el id del usuario que realiza la gestión, y el motivo de la gestión.
+ * Todos los campos son obligatorios y algunos tienen restricciones de longitud.
+ */
 public record GestionReporteDto(
 
         @NotNull EstadoReporte estadoAnterior,

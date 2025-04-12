@@ -8,6 +8,18 @@ import co.edu.uniquindio.model.enums.Rol;
 
 import java.util.List;
 
+/**
+ * DTO que representa la información pública de un usuario del sistema.
+ *
+ * @param nombre                   Nombre del usuario.
+ * @param direccion                Dirección del usuario.
+ * @param ciudad                   Ciudad del usuario.
+ * @param id                       Identificador único del usuario.
+ * @param email                    Correo electrónico del usuario.
+ * @param notificaciones           Lista de notificaciones recibidas.
+ * @param reportes                 Lista de reportes creados por el usuario.
+ * @param listaReportesFavorito    Lista de reportes marcados como favoritos por el usuario.
+ */
 public record UsuarioDTO(
         String nombre,
         String direccion,
@@ -22,3 +34,4 @@ public record UsuarioDTO(
         List<ReporteDTO> listaReportesFavorito
 ) {
 }
+

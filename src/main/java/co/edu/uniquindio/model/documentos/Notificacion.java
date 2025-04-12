@@ -11,7 +11,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-
+/**
+ * Representa una Notificacion dentro del sistema.
+ * Esta clase está mapeada a la colección "notificaciones" en MongoDB.
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(collection = "notificaciones")

@@ -48,7 +48,6 @@ public class CategoriaImplementTest {
     //elimina la categoria creada con el @BeforeEach para no tener datos repetidos
     @AfterEach
     public void tearDown() {
-
         categoriaRepo.deleteAll();
     }
 
@@ -72,7 +71,7 @@ public class CategoriaImplementTest {
         Categoria actualizada = categoriaRepo.findById(categoriaExistente.getId()).get();
         assertEquals("Tecnología Avanzada", actualizada.getNombre());
     }
-    private static final Logger logger = (Logger) LoggerFactory.getLogger(CategoriaImplementTest.class);
+
     @Test
     public void testEditarCategoriaInexistente() throws Exception {
         EditarCategoriaDto editar = new EditarCategoriaDto(
@@ -81,10 +80,9 @@ public class CategoriaImplementTest {
                 "Descripción"
         );
 
-       Exception ex= assertThrows(ElementoNoEncontradoException.class, () ->
+        assertThrows(ElementoNoEncontradoException.class, () ->
                 categoriaService.editarCategoria(editar));
 
-       logger.info(ex.getMessage());
     }
 
     @Test

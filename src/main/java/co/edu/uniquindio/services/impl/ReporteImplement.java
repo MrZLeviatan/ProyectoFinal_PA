@@ -1,5 +1,6 @@
 package co.edu.uniquindio.services.impl;
 
+import co.edu.uniquindio.dto.MensajeDTO;
 import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.dto.reporte.*;
 
@@ -21,9 +22,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,6 +43,12 @@ public class ReporteImplement implements ReporteService {
     private final UsuarioRepo usuarioRepo;
     private final CategoriaRepo categoriaRepo;
 
+    /**
+     * Método para agregar un nuevo reporte.
+     *
+     * @param reporte Objeto DTO con los datos del reporte a registrar.
+     * @throws ElementoNoEncontradoException Si no se encuentra el usuario asociado al reporte.
+     */
     @Override
     public void agregarReporte(RegistrarReporteDto reporte) throws ElementoNoEncontradoException {
         Usuario usuario = obtenerPorId(reporte.idUsuario());
@@ -58,9 +68,12 @@ public class ReporteImplement implements ReporteService {
         usuarioRepo.save(usuario);
     }
 
-
-
-
+    /**
+     * Método para actualizar los datos de un reporte existente.
+     *
+     * @param reporteDto Objeto DTO con los datos actualizados del reporte.
+     * @throws Exception Si ocurre algún error durante la actualización.
+     */
     @Override
     public void actualizarReporte(EditarReporteDto reporteDto) throws Exception {
         //aca debo verificar token
@@ -75,8 +88,13 @@ public class ReporteImplement implements ReporteService {
         reporteRepo.save(reporte);
     }
 
-
-
+    /**
+     * Método para eliminar un reporte.
+     *
+     * @param reporteDto Objeto DTO con la ID del reporte y la contraseña del usuario.
+     * @throws ElementoNoEncontradoException Si el reporte o el usuario no son encontrados.
+     * @throws PermisoDenegadoException Si la contraseña proporcionada es incorrecta.
+     */
     @Override
     public void eliminarReporte(EliminarReporteDto reporteDto) throws ElementoNoEncontradoException {
         //verificar token
@@ -106,24 +124,42 @@ public class ReporteImplement implements ReporteService {
         }
     }
 
-    private String obtenerIdToken() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return user.getUsername();
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<MensajeDTO<String>> noResourceFoundExceptionHandler(NoResourceFoundException ex) {
+        return ResponseEntity.status(404).body(new MensajeDTO<>(true, "El recurso no fue encontrado"));
     }
 
-
+    /**
+     * Método para buscar un reporte por su ID.
+     *
+     * @param idReporte ID del reporte a buscar.
+     * @return El reporte encontrado convertido a DTO.
+     * @throws ElementoNoEncontradoException Si no se encuentra el reporte.
+     */
     @Override
     public ReporteDTO buscarReporte(String idReporte) throws ElementoNoEncontradoException {
         Reporte reporte= existeReporte(idReporte);
         return reporteMapper.toReporteDTO(reporte);
     }
 
+    /**
+     * Método para obtener todos los reportes.
+     *
+     * @return Lista de todos los reportes convertidos a DTO.
+     * @throws Exception Si ocurre algún error durante la consulta.
+     */
     @Override
     public List<ReporteDTO> buscarReportes() throws Exception {
         List<Reporte> reportes = reporteRepo.findAll();
         return reportes.stream().map(reporteMapper::toReporteDTO).collect(Collectors.toList());
     }
 
+    /**
+     * Método para marcar un reporte como importante.
+     *
+     * @param reporteDto Objeto DTO con la ID del reporte.
+     * @throws Exception Si ocurre algún error durante el proceso.
+     */
     @Override
     public void marcarReporteImportante(MarcarReporteDto reporteDto) throws Exception {
         Reporte reporte = existeReporte(reporteDto.idReporte());
@@ -132,6 +168,12 @@ public class ReporteImplement implements ReporteService {
       reporteRepo.save(reporte);
     }
 
+    /**
+     * Método para quitar la marca de importante a un reporte.
+     *
+     * @param reporteDto Objeto DTO con la ID del reporte.
+     * @throws Exception Si ocurre algún error durante el proceso.
+     */
     @Override
     public void quitarReporteImportante(MarcarReporteDto reporteDto) throws Exception {
         Reporte reporte = existeReporte(reporteDto.idReporte());
@@ -144,6 +186,12 @@ public class ReporteImplement implements ReporteService {
 
     }
 
+    /**
+     * Método para marcar un reporte como favorito.
+     *
+     * @param reporteDto Objeto DTO con la ID del reporte y del usuario.
+     * @throws Exception Si ocurre algún error durante el proceso.
+     */
     @Override
     public void marcarReporteFavorito(MarcarReporteDto reporteDto) throws Exception {
         Reporte reporte = existeReporte(reporteDto.idReporte());
@@ -152,6 +200,12 @@ public class ReporteImplement implements ReporteService {
         usuarioRepo.save(usuario);
     }
 
+    /**
+     * Método para quitar un reporte de la lista de favoritos.
+     *
+     * @param reporteDto Objeto DTO con la ID del reporte y del usuario.
+     * @throws Exception Si ocurre algún error durante el proceso.
+     */
     @Override
     public void quitarReporteFavorito(MarcarReporteDto reporteDto) throws Exception {
         Reporte reporte = existeReporte(reporteDto.idReporte());
@@ -160,6 +214,12 @@ public class ReporteImplement implements ReporteService {
         usuarioRepo.save(usuario);
     }
 
+    /**
+     * Método para marcar un reporte como resuelto.
+     *
+     * @param reporteDto Objeto DTO con la ID del reporte.
+     * @throws Exception Si ocurre algún error durante el proceso.
+     */
     @Override
     public void marcarReporteResuelto(MarcarReporteDto reporteDto) throws Exception {
         Reporte reporte = existeReporte(reporteDto.idReporte());
@@ -168,6 +228,12 @@ public class ReporteImplement implements ReporteService {
         reporteRepo.save(reporte);
     }
 
+    /**
+     * Método para marcar un reporte como resuelto.
+     *
+     * @param reporteDto Objeto DTO con la ID del reporte.
+     * @throws Exception Si ocurre algún error durante el proceso.
+     */
     @Override
     public void quitarReporteResuelto(MarcarReporteDto reporteDto) throws Exception {
         Reporte reporte = existeReporte(reporteDto.idReporte());
@@ -175,17 +241,35 @@ public class ReporteImplement implements ReporteService {
         reporteRepo.save(reporte);
     }
 
+    /**
+     * Método para obtener el historial de estados de un reporte.
+     *
+     * @param idReporte ID del reporte cuyo historial se quiere obtener.
+     * @return Lista de historial de estados del reporte.
+     * @throws Exception Si ocurre algún error durante el proceso.
+     */
     @Override
     public List<HistorialEstadoDTO> obtenerHistorialEstadosReporte(String idReporte) throws Exception {
         return List.of();
     }
 
+    /**
+     * Método para gestionar un reporte.
+     *
+     * @param reporte Objeto DTO con los datos de gestión del reporte.
+     * @throws Exception Si ocurre algún error durante el proceso.
+     */
     @Override
     public void gestionarReporte(GestionReporteDto reporte) throws Exception {
-
     }
 
-
+    /**
+     * Método que obtiene un usuario a partir de su ID.
+     *
+     * @param id El ID del usuario que se quiere obtener.
+     * @return El usuario encontrado.
+     * @throws ElementoNoEncontradoException Si el ID no es válido o no se encuentra el usuario.
+     */
     private Usuario obtenerPorId(String id) throws ElementoNoEncontradoException {
         // Buscamos el usuario que se quiere obtener
         if (!ObjectId.isValid(id)) {
@@ -201,6 +285,13 @@ public class ReporteImplement implements ReporteService {
         return optionalCuenta.get();
     }
 
+    /**
+     * Método que verifica si un reporte existe a partir de su ID.
+     *
+     * @param id El ID del reporte que se quiere verificar.
+     * @return El reporte encontrado.
+     * @throws ElementoNoEncontradoException Si el reporte no existe.
+     */
     private Reporte existeReporte(@NotBlank String id) {
         if (!ObjectId.isValid(id)) {
             throw new ElementoNoEncontradoException("No se encontró el reporte con la id "+id);
@@ -213,6 +304,13 @@ public class ReporteImplement implements ReporteService {
         }
     }
 
+    /**
+     * Método que obtiene una categoría a partir de su ID.
+     *
+     * @param id El ID de la categoría que se quiere obtener.
+     * @return La categoría encontrada.
+     * @throws ElementoNoEncontradoException Si el ID no es válido o no se encuentra la categoría.
+     */
     private Categoria obtenerCategoria(String id) {
         if (!ObjectId.isValid(id)) {
             throw new ElementoNoEncontradoException("No se encontró la categoria con el id "+id);
@@ -224,5 +322,4 @@ public class ReporteImplement implements ReporteService {
             throw new ElementoNoEncontradoException("No se encontró la categoria con el id "+id);
         }
     }
-
 }

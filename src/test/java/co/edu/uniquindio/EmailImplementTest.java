@@ -1,7 +1,7 @@
 package co.edu.uniquindio;
 
 import co.edu.uniquindio.dto.EmailDto;
-import co.edu.uniquindio.services.EmailServicio;
+import co.edu.uniquindio.services.EmailService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class EmailImplementTest {
 
     @Autowired
-    private EmailServicio emailServicio;
+    private EmailService emailService;
 
     @Test
     void enviarCorreo() throws Exception {
@@ -19,6 +19,6 @@ public class EmailImplementTest {
         //cambiar a un correo real donde enviar los mensajes
         //recordar revisar el spam
         String destinatario="andrey3681.ay@gmail.com";
-        emailServicio.enviarCorreo(new EmailDto(asunto,cuerpo,destinatario));
+        emailService.enviarCorreo(new EmailDto(asunto,cuerpo,destinatario));
     }
 }

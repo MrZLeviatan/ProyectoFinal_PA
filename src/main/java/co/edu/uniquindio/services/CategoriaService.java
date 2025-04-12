@@ -3,6 +3,7 @@ package co.edu.uniquindio.services;
 import co.edu.uniquindio.dto.moderador.CategoriaDTO;
 import co.edu.uniquindio.dto.moderador.CrearCategoriaDto;
 import co.edu.uniquindio.dto.moderador.EditarCategoriaDto;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public interface CategoriaService {
      * @param id Identificador único de la categoría.
      * @throws Exception Sí ocurre un error durante la eliminación.
      */
-    void eliminarCategoria(String id) throws Exception;
+    void eliminarCategoria(String id) throws ElementoNoEncontradoException;
 
     /**
      * Obtiene una categoría por su identificador único.

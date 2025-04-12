@@ -1,6 +1,5 @@
 package co.edu.uniquindio.Security;
 
-// Importaciones necesarias para trabajar con JWT, filtros de seguridad y autenticación en Spring
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import jakarta.servlet.FilterChain;
@@ -15,17 +14,20 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.util.List;
 
-@Component // Indica que esta clase es un componente manejado por Spring
-@RequiredArgsConstructor // Genera automáticamente un constructor con los atributos marcados como final
+
+/**
+ * Filtro de seguridad que intercepta cada solicitud HTTP para verificar la validez de un token JWT.
+ * Si el token es válido, extrae la información del usuario (como el nombre y el rol), y la agrega al contexto de seguridad
+ * de Spring para permitir el acceso a recursos protegidos.
+ */
+@Component
+@RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
-    // Utilidad para trabajar con tokens JWT
     private final JWTUtils jwtUtil;
-
     // Método principal del filtro que se ejecuta una vez por solicitud
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)

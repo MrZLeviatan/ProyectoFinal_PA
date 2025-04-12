@@ -14,6 +14,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
+/**
+ * Representa un reporte dentro del sistema.
+ * Esta clase está mapeada a la colección "reportes" en MongoDB.
+ * Un reporte contiene información sobre su título, usuario asociado, ubicación, estado, categoría, comentarios, historial, fotos,
+ * importancia y severidad.
+ * La clase permite la gestión y seguimiento de reportes con historial de cambios y comentarios adicionales por parte de los usuarios.
+ */
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "reportes")

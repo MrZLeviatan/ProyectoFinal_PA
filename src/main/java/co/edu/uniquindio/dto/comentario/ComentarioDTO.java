@@ -1,9 +1,14 @@
 package co.edu.uniquindio.dto.comentario;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * DTO que representa un comentario en el sistema.
+ * Este objeto transporta los datos relacionados con un comentario,
+ * incluyendo el contenido, la fecha de creación, el usuario que lo hizo,
+ * el reporte asociado y cualquier comentario o respuesta en formato DTO.
+ */
 public record ComentarioDTO(
         String id,
         String contenido, // Contenido del comentario
