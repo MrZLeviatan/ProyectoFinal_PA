@@ -18,13 +18,13 @@ public class ModeradorController {
 
     private final ModeradorService moderadorService;
 
-    @DeleteMapping("/eliminar")
+    @DeleteMapping()
     public ResponseEntity<Void> eliminarModerador(@RequestBody EliminarCuentaDto cuentaDto) throws Exception {
         moderadorService.eliminarModerador(cuentaDto);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/actualizar")
+    @PutMapping()
     public ResponseEntity<Void> actualizarModerador(@RequestBody EditarModeradorDto moderadorAct) throws Exception {
         moderadorService.actualizarModerador(moderadorAct);
         return ResponseEntity.noContent().build();
