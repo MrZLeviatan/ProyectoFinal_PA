@@ -1,13 +1,13 @@
 package co.edu.uniquindio.services.impl;
+
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.EmailDto;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
-import co.edu.uniquindio.dto.TokenDTO;
 import co.edu.uniquindio.dto.usuario.ActivarCuentaDto;
 import co.edu.uniquindio.dto.usuario.EditarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.RegistrarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
-import co.edu.uniquindio.exeptions.*;
+import co.edu.uniquindio.exceptions.*;
 import co.edu.uniquindio.mapper.UsuarioMapper;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
@@ -17,9 +17,7 @@ import co.edu.uniquindio.services.EmailServicio;
 import co.edu.uniquindio.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
@@ -28,13 +26,9 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuarioService {
 
-
     private final EmailServicio emailServicio;;
-
     private final UsuarioRepo usuarioRepo;
     private final UsuarioMapper usuarioMapper;
-
-
 
     @Override
     public void eliminarUsuario(EliminarCuentaDto cuentaDto) throws Exception {
@@ -102,10 +96,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     public void activarCuenta(ActivarCuentaDto activarCuentaDto) {
 
     }
-
-
-
-
 
     @Override
     public void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws ElementoNoEncontradoException {
