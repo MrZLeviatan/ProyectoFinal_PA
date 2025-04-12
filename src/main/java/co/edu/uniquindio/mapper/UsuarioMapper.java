@@ -22,13 +22,8 @@ public interface UsuarioMapper {
     @Mapping(target = "id", ignore = true) //ignoamos la id la crea mongo al guardarse
     Usuario toDocument(RegistrarUsuarioDto usuarioDTO);
 
-
-
     // usuario a usuario Dto
      UsuarioDTO toUsuarioDTO(Usuario usuario);
 
-
-
      List<UsuarioDTO> toUsuarioDTO(List<Usuario> usuarios);
-
 }
