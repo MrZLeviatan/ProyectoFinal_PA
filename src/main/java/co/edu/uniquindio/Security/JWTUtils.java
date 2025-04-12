@@ -1,6 +1,5 @@
 package co.edu.uniquindio.Security;
 
-// Importaciones necesarias para manejar JWT y claves secretas
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
@@ -10,10 +9,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * Clase utilitaria para generar y validar tokens JWT.
+ * Esta clase es responsable de crear tokens JWT con una duración determinada y de validar la autenticidad de los mismos.
+ */
 @Component
 public class JWTUtils {
 
-    // Método para generar un token JWT
     public String generateToken(String id, Map<String, String> claims) {
 
         Instant now = Instant.now(); // Se obtiene el instante actual
