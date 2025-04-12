@@ -106,7 +106,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
         Usuario usuario= obtenerUsuarioByEmail(email);
         if(usuario.getEstadoUsuario().equals(EstadoUsuario.ELIMINADO)){
-            throw new ElementoNoEncontradoException("el correo ingresado no existe");
+            throw new ElementoNoEncontradoException("El usuario fue eliminado");
         }
         if(usuario.getEstadoUsuario().equals(EstadoUsuario.ACTIVO)){
             String codigo= generarCodigoActivacion();
@@ -149,7 +149,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new CodigoExpiradoException("El código ingresado ya venció");
         }
 
-        // Verificamos si el código es correo
+        // Verificamos si el código es correcto
         if (!codigoValidacion.getCodigo().equals(activarCuentaDto.codigoActivacion().codigo())){
             throw new CodigoIncorrectoException("El código de confirmación no es correcto");
         }

@@ -6,10 +6,12 @@ import co.edu.uniquindio.model.documentos.Notificacion;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.NotificacionService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class NotificacionServiceImplement implements NotificacionService {
 
     UsuarioRepo usuarioRepo;

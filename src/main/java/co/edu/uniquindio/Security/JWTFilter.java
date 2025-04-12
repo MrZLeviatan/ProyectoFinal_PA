@@ -65,6 +65,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
                 // Se guarda la autenticación en el contexto de seguridad
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
             }
 
         } catch (Exception e) {

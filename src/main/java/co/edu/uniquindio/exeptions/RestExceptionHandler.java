@@ -75,6 +75,7 @@ public class RestExceptionHandler {
     public ResponseEntity<MensajeDTO<String>> codigoIncorrectoHandler(CodigoIncorrectoException ex) {
         return ResponseEntity.status(400).body(new MensajeDTO<>(true, ex.getMessage()));
     }
+
     //410 me indica que el dato ingresado ya esta vencido
     @ExceptionHandler(CodigoExpiradoException.class)
     public ResponseEntity<MensajeDTO<String>> codigoExpiradoHandler(CodigoExpiradoException ex) {

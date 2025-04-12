@@ -37,8 +37,8 @@ public class ComentarioServiceImplement implements ComentarioService {
             reporte.get().getComentarios().add(nuevoComentario);
             reporteRepo.save(reporte.get());
             comentarioRepo.save(nuevoComentario);
-            socketNotificationService.notificarClientes(); //notificaciones en tiempo real
-            notificacionServiceImplement.enviarNotificacion(); //notificaciones en caso de que la persona no este concectada
+          //  socketNotificationService.notificarClientes(); //notificaciones en tiempo real
+          //  notificacionServiceImplement.enviarNotificacion(); //notificaciones en caso de que la persona no este concectada
         }else {
             throw new ElementoNoEncontradoException("no existe el reporte con id "+ comentario.idReporte());
         }

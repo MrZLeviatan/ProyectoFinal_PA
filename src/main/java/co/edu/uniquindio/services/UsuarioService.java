@@ -2,11 +2,9 @@ package co.edu.uniquindio.services;
 
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
-import co.edu.uniquindio.dto.TokenDTO;
 import co.edu.uniquindio.dto.usuario.EditarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.dto.usuario.*;
-import co.edu.uniquindio.services.impl.LoginDTO;
 import jakarta.validation.Valid;
 import co.edu.uniquindio.exeptions.ElementoRepetidoException;
 
