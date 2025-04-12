@@ -1,7 +1,7 @@
 package co.edu.uniquindio.services.impl;
 
 import co.edu.uniquindio.dto.modeloDTO.NotificacionDTOM;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.model.documentos.Notificacion;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
