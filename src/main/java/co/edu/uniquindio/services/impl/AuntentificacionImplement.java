@@ -29,7 +29,6 @@ public class AuntentificacionImplement implements AutentificacionService {
     private final JWTUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
 
-
     /**
      * Inicia sesión verificando las credenciales del usuario y generando un token JWT si son válidas.
      *
@@ -39,6 +38,7 @@ public class AuntentificacionImplement implements AutentificacionService {
      * @throws UsuarioNoActivadoException Si el usuario no tiene estado ACTIVO.
      * @throws CredencialesInvalidasException Si las credenciales proporcionadas son incorrectas.
      */
+
     @Override
     public TokenDTO iniciarSesion(LoginDto loginDTO) throws ElementoNoEncontradoException, UsuarioNoActivadoException, CredencialesInvalidasException {
 
@@ -55,12 +55,14 @@ public class AuntentificacionImplement implements AutentificacionService {
         String token = jwtUtils.generateToken(usuario.getId().toHexString(), crearClaims(usuario));
         return new TokenDTO(token);
     }
+
     /**
      * Crea los claims para el token JWT, que incluyen la información básica del usuario.
      *
      * @param usuario El usuario que va a ser autenticado.
      * @return Mapa con los claims a incluir en el token JWT.
      */
+    
     private Map<String, String> crearClaims(Usuario usuario) {
         return Map.of(
                 "email", usuario.getEmail(),
