@@ -3,14 +3,13 @@ package co.edu.uniquindio.services.impl;
 import co.edu.uniquindio.dto.moderador.CategoriaDTO;
 import co.edu.uniquindio.dto.moderador.CrearCategoriaDto;
 import co.edu.uniquindio.dto.moderador.EditarCategoriaDto;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.mapper.CategoriaMapper;
 import co.edu.uniquindio.model.documentos.Categoria;
 import co.edu.uniquindio.repositorios.CategoriaRepo;
 import co.edu.uniquindio.services.CategoriaService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
