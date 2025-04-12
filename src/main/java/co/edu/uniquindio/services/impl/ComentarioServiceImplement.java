@@ -72,7 +72,6 @@ public class ComentarioServiceImplement implements ComentarioService {
     }
 
 
-
     @Override
     public ComentarioDTO buscarComentario(String idComentario) throws Exception {
         Optional<Comentario> comentario = comentarioRepo.findById(new ObjectId(idComentario));
