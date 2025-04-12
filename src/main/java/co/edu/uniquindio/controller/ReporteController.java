@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/Reportes")
+@RequestMapping("api/reportes")
 // Controlador encargado de gestionar los reportes dentro del sistema.
 // Incluye operaciones para registrar, actualizar, eliminar, buscar y marcar reportes con diferentes estados o etiquetas.
 public class ReporteController {
