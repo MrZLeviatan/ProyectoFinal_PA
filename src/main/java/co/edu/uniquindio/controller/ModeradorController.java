@@ -1,5 +1,7 @@
 package co.edu.uniquindio.controller;
 
+import co.edu.uniquindio.dto.MensajeDTO;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,29 +23,33 @@ public class ModeradorController {
 
     private final ModeradorService moderadorService;
 
-
-    @DeleteMapping("/eliminar")
-    public ResponseEntity<Void> eliminarModerador(@RequestBody EliminarCuentaDto cuentaDto) throws Exception {
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping
+    public ResponseEntity<MensajeDTO> eliminarModerador(@RequestBody EliminarCuentaDto cuentaDto) throws Exception {
         moderadorService.eliminarModerador(cuentaDto);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new MensajeDTO<>(false, "Cuenta eliminada exitosamente"));
     }
 
-    @PutMapping("/actualizar")
-    public ResponseEntity<Void> actualizarModerador(@RequestBody EditarModeradorDto moderadorAct) throws Exception {
+    @SecurityRequirement(name = "bearerAuth")
+    @PutMapping
+    public ResponseEntity<MensajeDTO> actualizarModerador(@RequestBody EditarModeradorDto moderadorAct) throws Exception {
         moderadorService.actualizarModerador(moderadorAct);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new MensajeDTO<>(false,"Cuenta modificada exitosamente"));
     }
 
-    @GetMapping("/obtener/{id}")
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/{id}")
     public ResponseEntity<UsuarioDTO> obtenerModeradorId(@PathVariable String id) throws Exception {
         return ResponseEntity.ok(moderadorService.obtenerModeradorId(id));
     }
 
-    @GetMapping("/obtener/email/{email}")
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/email/{email}")
     public ResponseEntity<UsuarioDTO> obtenerModeradorEmail(@PathVariable String email) throws Exception {
         return ResponseEntity.ok(moderadorService.obtenerModeradorEmail(email));
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/listar-usuarios")
     public ResponseEntity<List<UsuarioDTO>> listarUsuarios(@RequestParam(required = false) String nombre,
                                                            @RequestParam(required = false) String ciudad,
@@ -51,6 +57,4 @@ public class ModeradorController {
                                                            @RequestParam int size) throws Exception {
         return ResponseEntity.ok(moderadorService.listarUsuarios(nombre, ciudad, pagina, size));
     }
-
-
 }

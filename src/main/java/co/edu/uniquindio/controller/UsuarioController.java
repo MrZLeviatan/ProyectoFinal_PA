@@ -22,30 +22,28 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
 
-    @SecurityRequirement(name = "cookieAuth")  // 🔐 Método protegido (requiere autenticación con cookies)
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{id}")
     public ResponseEntity<MensajeDTO<UsuarioDTO>> obtenerId(@PathVariable String id) throws Exception {
         UsuarioDTO info = usuarioService.obtenerUsuarioId(id);
         return ResponseEntity.ok(new MensajeDTO<>(false,info));
     }
 
-
-    @SecurityRequirement(name = "cookieAuth")  // 🔐 Método protegido (requiere autenticación con cookies)
-    @GetMapping("/{email}")
-    public ResponseEntity<MensajeDTO<UsuarioDTO>> obtenerEmail(@PathVariable String id) throws Exception {
-        UsuarioDTO info = usuarioService.obtenerUsuarioEmail(id);
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/email/{email}")
+    public ResponseEntity<MensajeDTO<UsuarioDTO>> obtenerEmail(@PathVariable String email) throws Exception {
+        UsuarioDTO info = usuarioService.obtenerUsuarioEmail(email);
         return ResponseEntity.ok(new MensajeDTO<>(false,info));
     }
 
-
-    @SecurityRequirement(name = "cookieAuth")  // 🔐 Método protegido (requiere autenticación con cookies)
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping
     public ResponseEntity<MensajeDTO<String>> eliminarUsuario(@RequestBody EliminarCuentaDto cuentaDto) throws Exception {
         usuarioService.eliminarUsuario(cuentaDto);
         return ResponseEntity.ok(new MensajeDTO<>(false, "Cuenta eliminada exitosamente"));
     }
 
-    @SecurityRequirement(name = "cookieAuth")  // 🔐 Método protegido (requiere autenticación con cookies)
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping
     public ResponseEntity<MensajeDTO<String>> editarUsuario(@Valid @RequestBody EditarUsuarioDto cuenta) throws Exception{
         usuarioService.actualizarUsuario(cuenta);
@@ -61,8 +59,8 @@ public class UsuarioController {
     }
 
     // Solicitar restablecimiento de contraseña
-    @PostMapping("/codigoVerificacion")
-    public ResponseEntity<MensajeDTO<String>> solicitarRestablecer(@Valid @RequestBody String email ) throws Exception{
+    @PostMapping("/codigoVerificacion/{email}")
+    public ResponseEntity<MensajeDTO<String>> solicitarRestablecer(@PathVariable String email) throws Exception{
         usuarioService.solicitarRestablecer(email);
         return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Restablecer"));
     }
@@ -80,6 +78,4 @@ public class UsuarioController {
         usuarioService.activarCuenta(activarCuentaDto);
         return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Cuenta activada"));
     }
-
-
 }
