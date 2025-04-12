@@ -1,7 +1,7 @@
 package co.edu.uniquindio.services.impl;
 
 import co.edu.uniquindio.dto.comentario.*;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.mapper.ComentarioMapper;
 import co.edu.uniquindio.model.documentos.Comentario;
 import co.edu.uniquindio.model.documentos.Reporte;
@@ -18,13 +18,13 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ComentarioServiceImplement implements ComentarioService {
+
     @Autowired
     ComentarioRepo comentarioRepo;
     @Autowired
     ComentarioMapper comentarioMapper;
     @Autowired
     ReporteRepo reporteRepo;
-
 
     @Override
     public void agregarComentario(RegistrarComentarioDto comentario) throws Exception {
