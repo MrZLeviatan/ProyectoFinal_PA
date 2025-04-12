@@ -1,13 +1,10 @@
 package co.edu.uniquindio.services;
 
 import co.edu.uniquindio.dto.EliminarCuentaDto;
-import co.edu.uniquindio.dto.moderador.CategoriaDTO;
-import co.edu.uniquindio.dto.moderador.CrearCategoriaDto;
-import co.edu.uniquindio.dto.moderador.EditarCategoriaDto;
 import co.edu.uniquindio.dto.moderador.EditarModeradorDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.exeptions.CiudadNoExisteException;
-import co.edu.uniquindio.exeptions.RangoPaginaNoPermitido;
+import co.edu.uniquindio.exeptions.RangoPaginaNoPermitidoException;
 
 import java.util.List;
 
@@ -52,7 +49,7 @@ public interface ModeradorService {
      * @return Lista de usuarios que coinciden con los criterios de búsqueda.
      * @throws Exception: Si ocurre un error durante la obtención.
      */
-    List<UsuarioDTO> listarUsuarios(String nombre,String ciudad, int pagina, int size) throws RangoPaginaNoPermitido, CiudadNoExisteException;
+    List<UsuarioDTO> listarUsuarios(String nombre,String ciudad, int pagina, int size) throws RangoPaginaNoPermitidoException, CiudadNoExisteException;
 
 
 }
