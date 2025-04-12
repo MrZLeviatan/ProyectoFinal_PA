@@ -1,14 +1,12 @@
 package co.edu.uniquindio.services;
 
 import co.edu.uniquindio.dto.EliminarCuentaDto;
-import co.edu.uniquindio.dto.LoginDto;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
 import co.edu.uniquindio.dto.usuario.EditarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.dto.usuario.*;
 import jakarta.validation.Valid;
 import co.edu.uniquindio.exeptions.ElementoRepetidoException;
-import jakarta.validation.Valid;
 
 // Interfaz que define el contrato para las operaciones relacionadas con usuarios.
 public interface UsuarioService {
