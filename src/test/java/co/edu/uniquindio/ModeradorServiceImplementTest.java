@@ -5,8 +5,7 @@ import co.edu.uniquindio.dto.moderador.EditarModeradorDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.exeptions.CiudadNoExisteException;
 import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.ElementoRepetidoException;
-import co.edu.uniquindio.exeptions.RangoPaginaNoPermitido;
+import co.edu.uniquindio.exeptions.RangoPaginaNoPermitidoException;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.Ciudad;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
@@ -132,7 +131,7 @@ public class ModeradorServiceImplementTest {
 
     @Test
     void testListarUsuariosPaginaNoExiste(){
-        assertThrows(RangoPaginaNoPermitido.class,()->{
+        assertThrows(RangoPaginaNoPermitidoException.class,()->{
             moderadorService.listarUsuarios("Juan", "mi casa", -1, -1);
         });
 
