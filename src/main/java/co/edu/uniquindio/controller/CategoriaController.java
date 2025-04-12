@@ -14,13 +14,13 @@ import java.util.List;
 public class CategoriaController {
     CategoriaService categoriaService;
 
-    @PostMapping("/crear")
+    @PostMapping()
     public ResponseEntity<Void> crearCategoria(@RequestBody CrearCategoriaDto categoriaDto) throws Exception {
         categoriaService.crearCategoria(categoriaDto);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/editar")
+    @PutMapping()
     public ResponseEntity<Void> editarCategoria(@RequestBody EditarCategoriaDto editarCategoriaDto) throws Exception {
         categoriaService.editarCategoria(editarCategoriaDto);
         return ResponseEntity.noContent().build();
