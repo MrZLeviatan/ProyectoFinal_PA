@@ -12,7 +12,7 @@ import co.edu.uniquindio.exceptions.ElementoRepetidoException;
 public interface UsuarioService {
 
     /**
-     *  Elimina un usuario del sistema en función de su ID y contraseña.
+     * Elimina un usuario del sistema en función de su ID y contraseña.
      * @param cuentaDto: Objeto de transferencia de datos que contiene el ID y la contraseña del usuario.
      * @throws Exception: Si ocurre un error durante la eliminación.
      */
@@ -48,10 +48,24 @@ public interface UsuarioService {
      */
     void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws Exception;
 
-
+    /**
+     * Crea un nuevo usuario en el sistema.
+     * @param usuarioDTO: Objeto de transferencia que contiene la información del nuevo usuario a registrar.
+     * @throws ElementoRepetidoException: Si ya existe un usuario con el mismo correo electrónico o documento.
+     */
     void crearUsuario(@Valid RegistrarUsuarioDto usuarioDTO) throws ElementoRepetidoException;
 
+    /**
+     * Inicia el proceso de restablecimiento de contraseña enviando un correo al usuario.
+     * @param email: Correo electrónico del usuario que solicita restablecer la contraseña.
+     * @throws Exception: Si el correo no está registrado o ocurre un error durante el proceso.
+     */
     void solicitarRestablecer(@Valid String email) throws Exception;
 
+    /**
+     * Activa la cuenta del usuario validando el código enviado a su correo electrónico.
+     * @param activarCuentaDto: Objeto que contiene la información necesaria para activar la cuenta.
+     * @throws Exception: Si el código es inválido o ocurre un error durante la activación.
+     */
     void activarCuenta(@Valid ActivarCuentaDto activarCuentaDto) throws Exception;
 }

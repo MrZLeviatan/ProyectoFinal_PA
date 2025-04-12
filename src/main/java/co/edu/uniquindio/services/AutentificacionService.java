@@ -7,6 +7,14 @@ import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.exceptions.UsuarioNoActivadoException;
 
 public interface AutentificacionService {
+
+    /**
+     * Inicia sesión en el sistema utilizando las credenciales proporcionadas.
+     * @param loginDTO: Objeto que contiene el correo electrónico y la contraseña del usuario.
+     * @return Objeto TokenDTO que contiene el token de autenticación generado si las credenciales son válidas.
+     * @throws Exception: Si las credenciales son incorrectas o ocurre un error durante el proceso de autenticación.
+     */
     TokenDTO iniciarSesion(LoginDto loginDTO) throws ElementoNoEncontradoException, UsuarioNoActivadoException,
             CredencialesInvalidasException;
+
 }

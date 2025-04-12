@@ -9,6 +9,7 @@ import java.util.List;
 
 
 public interface CategoriaService {
+
     /**
      * Crea una nueva categoría en el sistema.
      * @param categoriaDto Datos de la categoría a crear.
