@@ -3,7 +3,7 @@ package co.edu.uniquindio;
 import co.edu.uniquindio.dto.moderador.CategoriaDTO;
 import co.edu.uniquindio.dto.moderador.CrearCategoriaDto;
 import co.edu.uniquindio.dto.moderador.EditarCategoriaDto;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.mapper.CategoriaMapper;
 import co.edu.uniquindio.model.documentos.Categoria;
 import co.edu.uniquindio.repositorios.CategoriaRepo;
