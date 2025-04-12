@@ -37,28 +37,15 @@ public class SecurityConfig {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                // Desactiva la protección CSRF, útil para APIs REST (ya que no hay sesiones)
-
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // Habilita CORS y usa la configuración definida en corsConfigurationSource()
-
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Define que no se usen sesiones (stateless), ya que se usa JWT
-
                 .authorizeHttpRequests(req -> req
-                                .requestMatchers("/api/auth/**").permitAll()
-                                // Permite libre acceso a las rutas que comienzan con /api/auth (por ejemplo: login, registro)
-
+                                .requestMatchers("/api/Autentifcar/**").permitAll()
+                                .requestMatchers("/api/moderador/**").hasAuthority("ROL_MODERADOR")
                                 .anyRequest().authenticated()
-                        // Cualquier otra ruta requiere autenticación
                 )
-
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new AuthenticationEntryPoint()))
-                // Manejo de errores cuando no se ha autenticado el usuario (puedes personalizar este EntryPoint)
-
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        // Añade el filtro JWT antes del filtro de autenticación por usuario y contraseña
-
         return http.build();
         // Retorna la cadena de filtros de seguridad configurada
     }
