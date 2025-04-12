@@ -26,12 +26,13 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuarioService {
-    @Autowired
-    UsuarioRepo usuarioRepo;
-    @Autowired
-    UsuarioMapper usuarioMapper;
-    @Autowired
-    EmailServicio emailServicio;;
+
+
+    private final EmailServicio emailServicio;;
+
+    private final UsuarioRepo usuarioRepo;
+    private final UsuarioMapper usuarioMapper;
+
 
 
     @Override
