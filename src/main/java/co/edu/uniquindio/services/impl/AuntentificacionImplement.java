@@ -1,5 +1,6 @@
 package co.edu.uniquindio.services.impl;
 
+import co.edu.uniquindio.Security.JWTUtils;
 import co.edu.uniquindio.dto.EmailDto;
 import co.edu.uniquindio.dto.LoginDto;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
@@ -11,7 +12,6 @@ import co.edu.uniquindio.mapper.UsuarioMapper;
 import co.edu.uniquindio.model.vo.CodigoValidacion;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
-import co.edu.uniquindio.model.enums.Rol;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.AutentificacionService;
 import co.edu.uniquindio.services.EmailServicio;
@@ -29,22 +29,20 @@ public class AuntentificacionImplement implements AutentificacionService {
 
     UsuarioMapper usuarioMapper;
     UsuarioRepo usuarioRepo;
-
+    JWTUtils jwtUtils;
 
     @Override
-    public void iniciarSesion(LoginDto loginDTO) throws Exception {
+    public TokenDTO iniciarSesion(LoginDto loginDTO) throws Exception {
         Optional<Usuario> usuarioOptional= usuarioRepo.findByEmail(loginDTO.email());
+
         if(usuarioOptional.isEmpty()){
             throw new UsuarioException("El email no existe");
         }
         Usuario usuario = usuarioOptional.get();
         if(usuario.getPassword().equals(loginDTO.password())){
             if(usuario.getEstadoUsuario() == EstadoUsuario.ACTIVO){
-                if(usuario.getRol()== Rol.USUARIO){
-                    // aca que se vaya a la vista de un usuario
-                }else {
-                    //aca diriamos que se vaya a la vista de un moderador
-                }
+              String toquen=  jwtUtils.generateToken(usuarioOptional.get().getId().toHexString(),crearClaims(usuarioOptional.get()));
+              return new TokenDTO(toquen);
             }else {
                 throw new UsuarioException("El usuario debe activarse primero ");
                 //aca le mandariamos algo???
@@ -53,6 +51,15 @@ public class AuntentificacionImplement implements AutentificacionService {
             throw new UsuarioException("Contraseña incorrecta");
         }
     }
+
+    private Map<String, String> crearClaims(Usuario usuario){
+        return Map.of(
+                "email", usuario.getEmail(),
+                "nombre", usuario.getNombre(),
+                "rol", "ROLE_"+usuario.getRol().name()
+        );
+    }
+
 
     @Override
     public void crearUsuario(RegistrarUsuarioDto usuarioDTO) throws UsuarioException {
@@ -153,32 +160,5 @@ public class AuntentificacionImplement implements AutentificacionService {
 
     private boolean existeEmail(String email){
         return usuarioRepo.findByEmail(email).isPresent();
-    }
-
-    public TokenDTO login(LoginDto loginDTO) throws Exception {
-
-        Optional<Usuario> optionalUsuario = usuarioRepo.findByEmail(loginDTO.email());
-
-        if (optionalUsuario.isEmpty()) {
-            throw new Exception("El usuario no existe");
-        }
-
-        Usuario usuario = optionalUsuario.get();
-
-        // Verificar si la contraseña es correcta usando el PasswordEncoder
-        if (!passwordEncoder.matches(loginDTO.password(), usuario.getPassword())) {
-            throw new Exception("El usuario no existe");
-        }
-
-        String token = jwtUtils.generateToken(usuario.getId().toString(), crearClaims(usuario));
-        return new TokenDTO(token);
-    }
-
-    private Map<String, String> crearClaims(Usuario usuario) {
-        return Map.of(
-                "email", usuario.getEmail(),
-                "nombre", usuario.getNombre(),
-                "rol", "ROLE_" + usuario.getRol().name()
-        );
     }
 }
