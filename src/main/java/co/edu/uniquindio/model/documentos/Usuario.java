@@ -14,6 +14,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Representa a un usuario dentro del sistema, extendiendo de la clase Persona.
+ * Esta clase está mapeada a la colección "usuarios" en MongoDB.
+ * Un usuario contiene información personal, de autenticación (email y contraseña), rol dentro del sistema, estado del usuario,
+ * notificaciones asociadas, reportes creados y favoritos, y un código de validación.
+ * Además, registra la fecha en que se dio de alta en el sistema.
+ * El rol y estado del usuario determinan el nivel de acceso y la funcionalidad disponible dentro de la aplicación.
+ */
 @NoArgsConstructor
 @Document(collection = "usuarios")
 @ToString
