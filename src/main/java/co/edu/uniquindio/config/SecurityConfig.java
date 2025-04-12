@@ -41,7 +41,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> req
                                 .requestMatchers("/api/Autentifcar/**").permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS).permitAll()
                                 .requestMatchers("/api/moderador/**").hasAuthority("ROL_MODERADOR")
+                                .requestMatchers(HttpMethod.DELETE,"/api/reports").hasAnyAuthority("ROL_ClIENTE", "ROL_MODERADOR")
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new AuthenticationEntryPoint()))

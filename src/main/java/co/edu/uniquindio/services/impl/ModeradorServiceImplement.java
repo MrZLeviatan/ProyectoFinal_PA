@@ -1,11 +1,13 @@
 package co.edu.uniquindio.services.impl;
 
+import co.edu.uniquindio.constants.MensajesError;
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.moderador.EditarModeradorDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
-import co.edu.uniquindio.exeptions.CiudadNoExisteException;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.RangoPaginaNoPermitidoException;
+import co.edu.uniquindio.exceptions.CiudadNoExisteException;
+import co.edu.uniquindio.exceptions.CredencialesInvalidasException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.RangoPaginaNoPermitidoException;
 import co.edu.uniquindio.mapper.UsuarioMapper;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.Ciudad;
@@ -17,44 +19,33 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import  org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
-
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ModeradorServiceImplement implements ModeradorService {
 
-    @Autowired
-    UsuarioRepo usuarioRepo;
-    @Autowired
-    UsuarioMapper usuarioMapper;
-
+    private final UsuarioRepo usuarioRepo;
+    private final UsuarioMapper usuarioMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void eliminarModerador(EliminarCuentaDto cuentaDto) throws ElementoNoEncontradoException {
         Usuario usuario= buscarUsuarioId(cuentaDto.id());
+        if(!passwordEncoder.matches(cuentaDto.password(), usuario.getPassword())){
+            throw new CredencialesInvalidasException(MensajesError.CREDENCIALES_INVALIDAS);
+        }
         usuario.setEstadoUsuario(EstadoUsuario.ELIMINADO);
         usuarioRepo.save(usuario);
     }
 
     private Usuario buscarUsuarioId(@NotBlank String id) {
-        try {
-            Optional<Usuario> usuario= usuarioRepo.findById(new ObjectId(id));
-            if(usuario.isPresent()){
-                return usuario.get();
-            }else {
-                throw new ElementoNoEncontradoException("El administrador no existe");
-            }
-        }catch (IllegalArgumentException e) {
-            throw new ElementoNoEncontradoException("no existe el administrador con el id " + id);
-        }
-
-
+        return usuarioRepo.findById(new ObjectId(id))
+                .orElseThrow(() -> new ElementoNoEncontradoException(MensajesError.USARIO_NO_ENCONTRADO));
     }
 
     @Override
@@ -78,35 +69,33 @@ public class ModeradorServiceImplement implements ModeradorService {
         return usuarioMapper.toUsuarioDTO(usuario);
     }
 
-
-
     @Override
-    public List<UsuarioDTO> listarUsuarios(String nombre, String ciudad, int pagina, int size) throws RangoPaginaNoPermitidoException,CiudadNoExisteException {
-        if (pagina < 0 || size <= 0) {
-            throw new RangoPaginaNoPermitidoException("Página y tamaño deben ser mayores que 0");
-        }
-
-        Ciudad ciudadEnum;
-        try {
-            ciudadEnum = Ciudad.valueOf(ciudad.toUpperCase()); // en caso de que ciudad llegue en minúsculas
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new CiudadNoExisteException("Ciudad inválida: " + ciudad);
-        }
+    public List<UsuarioDTO> listarUsuarios(String nombre, String ciudad, int pagina, int size) {
+        validarRangoPagina(pagina, size);
+        Ciudad ciudadEnum = obtenerCiudadEnum(ciudad);
         Pageable pageable = PageRequest.of(pagina, size);
-
-        List<Usuario> usuarios= usuarioRepo.findByNombreYCiudad(nombre,ciudadEnum,pageable);
-
+        List<Usuario> usuarios = usuarioRepo.findByNombreYCiudad(nombre, ciudadEnum, pageable);
         return usuarioMapper.toUsuarioDTO(usuarios);
     }
 
-
-
-    private Usuario buscarUsuarioEmail(String email) {
-        Optional<Usuario> usuario = usuarioRepo.findByEmail(email);
-        if(usuario.isPresent()){
-            return usuario.get();
-        }else {
-            throw new ElementoNoEncontradoException("El administrador no existe");
+    private void validarRangoPagina(int pagina, int size) {
+        if (pagina < 0 || size <= 0) {
+            throw new RangoPaginaNoPermitidoException(MensajesError.VALORES_ERRONES_PAGE);
         }
     }
+
+    private Ciudad obtenerCiudadEnum(String ciudad) {
+        try {
+            return Ciudad.valueOf(ciudad.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new CiudadNoExisteException(MensajesError.CIUDAD_NO_ENCONTRADA + ciudad);
+        }
+    }
+
+    private Usuario buscarUsuarioEmail(String email) {
+        return usuarioRepo.findByEmail(email)
+                .orElseThrow(() -> new ElementoNoEncontradoException(MensajesError.USARIO_NO_ENCONTRADO + "con el email"+email));
+    }
+
+
 }

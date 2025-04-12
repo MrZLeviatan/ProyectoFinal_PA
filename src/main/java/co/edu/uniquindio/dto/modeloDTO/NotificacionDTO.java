@@ -1,4 +1,4 @@
-package co.edu.uniquindio.services.impl;
+package co.edu.uniquindio.dto.modeloDTO;
 
 public record NotificacionDTO(
         String titulo,

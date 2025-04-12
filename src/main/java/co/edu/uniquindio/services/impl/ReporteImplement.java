@@ -3,8 +3,8 @@ package co.edu.uniquindio.services.impl;
 import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.dto.reporte.*;
 
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.PermisoDenegadoException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.PermisoDenegadoException;
 import co.edu.uniquindio.mapper.ReporteMapper;
 import co.edu.uniquindio.model.documentos.Categoria;
 import co.edu.uniquindio.model.documentos.Reporte;
@@ -21,6 +21,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,14 +34,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReporteImplement implements ReporteService {
 
-    @Autowired
-    ReporteRepo reporteRepo;
-    @Autowired
-    ReporteMapper reporteMapper;
-    @Autowired
-    UsuarioRepo usuarioRepo;
-    @Autowired
-    private CategoriaRepo categoriaRepo;
+    private final ReporteRepo reporteRepo;
+    private final ReporteMapper reporteMapper;
+    private final UsuarioRepo usuarioRepo;
+    private final CategoriaRepo categoriaRepo;
 
     @Override
     public void agregarReporte(RegistrarReporteDto reporte) throws ElementoNoEncontradoException {
@@ -60,8 +58,12 @@ public class ReporteImplement implements ReporteService {
         usuarioRepo.save(usuario);
     }
 
+
+
+
     @Override
     public void actualizarReporte(EditarReporteDto reporteDto) throws Exception {
+        //aca debo verificar token
         Reporte reporte = existeReporte(reporteDto.idReporte());
         Categoria categoria= obtenerCategoria(reporteDto.categoria().id());
         reporte.setTitulo(reporteDto.titulo());
@@ -77,7 +79,15 @@ public class ReporteImplement implements ReporteService {
 
     @Override
     public void eliminarReporte(EliminarReporteDto reporteDto) throws ElementoNoEncontradoException {
+        //verificar token
+       String idUsuario = obtenerIdToken();
+
         Reporte reporte = existeReporte(reporteDto.idReporte());
+
+        if(!reporte.getIdUsuario().toString().equals(idUsuario)){
+            throw new PermisoDenegadoException("No tiene permisos para ejecutar esto");
+        }
+
         Usuario usuario = obtenerPorId(reporte.getIdUsuario().toString());
         if (reporteDto.password().equals(usuario.getPassword())) {
             // Elimina el reporte de la lista de reportes del usuario
@@ -86,6 +96,9 @@ public class ReporteImplement implements ReporteService {
             // Elimina el reporte de la base de datos
             reporteRepo.delete(reporte);
 
+            //debo agregar el historial de estados eliminado
+
+
             // Guarda los cambios del usuario
             usuarioRepo.save(usuario);
         } else {
@@ -93,6 +106,10 @@ public class ReporteImplement implements ReporteService {
         }
     }
 
+    private String obtenerIdToken() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return user.getUsername();
+    }
 
 
     @Override
@@ -121,6 +138,10 @@ public class ReporteImplement implements ReporteService {
         // Usuario usuario = obtenerPorId(reporteDto.idUsuario());
         reporte.setNumeroImportancia(reporte.getNumeroImportancia() - 1);
         reporteRepo.save(reporte);
+
+        //notificaciones
+        // notificaciones
+
     }
 
     @Override
@@ -143,6 +164,7 @@ public class ReporteImplement implements ReporteService {
     public void marcarReporteResuelto(MarcarReporteDto reporteDto) throws Exception {
         Reporte reporte = existeReporte(reporteDto.idReporte());
         reporte.setEstadoReporte(EstadoResuelto.RESUELTO);
+        //crear historial
         reporteRepo.save(reporte);
     }
 
@@ -155,7 +177,6 @@ public class ReporteImplement implements ReporteService {
 
     @Override
     public List<HistorialEstadoDTO> obtenerHistorialEstadosReporte(String idReporte) throws Exception {
-
         return List.of();
     }
 

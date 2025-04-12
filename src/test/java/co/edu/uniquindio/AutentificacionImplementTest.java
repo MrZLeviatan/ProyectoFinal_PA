@@ -1,23 +1,20 @@
 package co.edu.uniquindio;
 
 import co.edu.uniquindio.dto.LoginDto;
-import co.edu.uniquindio.exeptions.CredencialesInvalidasException;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.UsuarioNoActivadoException;
+import co.edu.uniquindio.exceptions.CredencialesInvalidasException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.UsuarioNoActivadoException;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.Ciudad;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.AutentificacionService;
-import co.edu.uniquindio.services.impl.AuntentificacionImplement;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 

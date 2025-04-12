@@ -55,6 +55,8 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 
+    implementation("com.cloudinary:cloudinary-http45:1.39.0")
+
 }
 
 tasks.withType<Test> {

@@ -1,5 +1,5 @@
 package co.edu.uniquindio.services.impl;
-import co.edu.uniquindio.dto.modeloDTO.NotificacionDTOM;
+import co.edu.uniquindio.dto.modeloDTO.NotificacionDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;

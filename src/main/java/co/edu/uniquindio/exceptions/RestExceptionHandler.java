@@ -1,4 +1,4 @@
-package co.edu.uniquindio.exeptions;
+package co.edu.uniquindio.exceptions;
 import co.edu.uniquindio.dto.MensajeDTO;
 import co.edu.uniquindio.dto.ValidacionDTO;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +20,11 @@ public class RestExceptionHandler {
             (NoResourceFoundException ex) {
         return ResponseEntity.status(404).body(new MensajeDTO<>(true, "El recurso no fue encontrado"));
     }
-
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<MensajeDTO<String>> generalExceptionHandler (Exception e){
         return ResponseEntity.internalServerError().body( new MensajeDTO<>(true, e.getMessage())
         );
     }
-
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<MensajeDTO<List<ValidacionDTO>>> validationExceptionHandler (
             MethodArgumentNotValidException ex ) {
@@ -41,8 +37,6 @@ public class RestExceptionHandler {
 
         return ResponseEntity.badRequest().body( new MensajeDTO<>(true, errores) );
     }
-
-
     //404 me indica que un elemento no existe
     @ExceptionHandler(CiudadNoExisteException.class)
     public ResponseEntity<MensajeDTO<String>> ciudadNoExisteExceptionHandler (CiudadNoExisteException ex) {
@@ -66,36 +60,24 @@ public class RestExceptionHandler {
     public ResponseEntity<MensajeDTO<String>> elementoRepetidoExceptionHandler (ElementoRepetidoException ex) {
         return ResponseEntity.status(409).body(new MensajeDTO<>(true, ex.getMessage()));
     }
-
     //403 me indica que el usuario no tiene permiso de realizar eso
     @ExceptionHandler(PermisoDenegadoException.class)
     public ResponseEntity<MensajeDTO<String>> permisoDenegadoExceptionHandler (PermisoDenegadoException ex) {
         return ResponseEntity.status(403).body(new MensajeDTO<>(true, ex.getMessage()));
     }
-
     // 416 Range Not Satisfiable me indica que el rango que esta trantado de usar no satisface la peticion
     @ExceptionHandler(RangoPaginaNoPermitidoException.class)
     public ResponseEntity<MensajeDTO<String>> rangoPaginaNoPermitidoExceptionHandler (RangoPaginaNoPermitidoException ex) {
         return ResponseEntity.status(416).body(new MensajeDTO<>(true, ex.getMessage()));
     }
-
-
     //indica que el codigo que ingreso esta mal
     @ExceptionHandler(CodigoIncorrectoException.class)
     public ResponseEntity<MensajeDTO<String>> codigoIncorrectoHandler(CodigoIncorrectoException ex) {
         return ResponseEntity.status(400).body(new MensajeDTO<>(true, ex.getMessage()));
     }
-
     //410 me indica que el dato ingresado ya esta vencido
     @ExceptionHandler(CodigoExpiradoException.class)
     public ResponseEntity<MensajeDTO<String>> codigoExpiradoHandler(CodigoExpiradoException ex) {
         return ResponseEntity.status(410).body(new MensajeDTO<>(true, ex.getMessage()));
     }
-
-
-
-
-
-
-
 }
