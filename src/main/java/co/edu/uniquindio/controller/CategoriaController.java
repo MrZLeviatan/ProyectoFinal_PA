@@ -14,30 +14,30 @@ import java.util.List;
 public class CategoriaController {
     CategoriaService categoriaService;
 
-    @PostMapping("/categoria/crear")
+    @PostMapping("/crear")
     public ResponseEntity<Void> crearCategoria(@RequestBody CrearCategoriaDto categoriaDto) throws Exception {
         categoriaService.crearCategoria(categoriaDto);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/categoria/editar")
+    @PutMapping("/editar")
     public ResponseEntity<Void> editarCategoria(@RequestBody EditarCategoriaDto editarCategoriaDto) throws Exception {
         categoriaService.editarCategoria(editarCategoriaDto);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/categoria/eliminar/{id}")
+    @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<Void> eliminarCategoria(@PathVariable String id) throws Exception {
         categoriaService.eliminarCategoria(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/categoria/obtener/{id}")
+    @GetMapping("/obtener/{id}")
     public ResponseEntity<CategoriaDTO> obtenerCategoriaId(@PathVariable String id) throws Exception {
         return ResponseEntity.ok(categoriaService.obtenerCategoriaId(id));
     }
 
-    @GetMapping("/categoria/listar")
+    @GetMapping("/listar")
     public ResponseEntity<List<CategoriaDTO>> listarCategorias() throws Exception {
         return ResponseEntity.ok(categoriaService.listarCategorias());
     }
