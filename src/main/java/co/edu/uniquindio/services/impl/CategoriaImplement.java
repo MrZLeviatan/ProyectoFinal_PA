@@ -34,8 +34,8 @@ public class CategoriaImplement implements CategoriaService {
     public void editarCategoria(EditarCategoriaDto editarCategoriaDto) throws Exception {
         Categoria categoriaModificada = buscarCategoriaId(editarCategoriaDto.id());
         categoriaModificada.setNombre(editarCategoriaDto.nombre());
-        categoriaModificada.setDescripcion(editarCategoriaDto.descripcion());
-        categoriaRepo.save(categoriaModificada);
+            categoriaModificada.setDescripcion(editarCategoriaDto.descripcion());
+            categoriaRepo.save(categoriaModificada);
     }
 
     @Override
@@ -51,11 +51,12 @@ public class CategoriaImplement implements CategoriaService {
     }
 
     @Override
-    public List<CategoriaDTO> listarCategorias() throws Exception {
-        return categoriaMapper.toCategoriaDTOList(obtenerCategorias());
+    public List<CategoriaDTO> listarCategorias() {
+        return categoriaMapper.toCategoriaDTOList((List<Categoria>) obtenerCategorias().stream().sorted());
     }
 
     private List<Categoria> obtenerCategorias() {
+
         return categoriaRepo.findAll();
     }
 

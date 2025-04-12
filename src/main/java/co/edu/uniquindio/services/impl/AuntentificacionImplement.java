@@ -20,10 +20,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuntentificacionImplement implements AutentificacionService {
 
-    @Autowired
-    UsuarioRepo usuarioRepo;
+    private final UsuarioRepo usuarioRepo;
 
-    JWTUtils jwtUtils;
+    private final JWTUtils jwtUtils;
 
     @Override
     public TokenDTO iniciarSesion(LoginDto loginDTO) throws ElementoNoEncontradoException,UsuarioNoActivadoException,CredencialesInvalidasException {
@@ -40,7 +39,6 @@ public class AuntentificacionImplement implements AutentificacionService {
                 throw new UsuarioNoActivadoException("El usuario debe activarse primero ");
             }
         }else {
-            //tenia contraseña incorrecta pero en clase se dijo que no se debia dar tanta informacion
             throw new CredencialesInvalidasException("el usuario no puedo ingresar");
         }
     }

@@ -89,25 +89,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void crearUsuario(RegistrarUsuarioDto usuarioDTO) {
-
-    }
-
-    @Override
-    public void solicitarRestablecer(String email) {
-
-    }
-
-    @Override
-    public void activarCuenta(ActivarCuentaDto activarCuentaDto) {
-
-    }
-
-
-
-
-
-    @Override
     public void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws ElementoNoEncontradoException {
         Optional<Usuario> usuario = usuarioRepo.findByEmail(restablecerPasswordDto.email());
         if (usuario.isPresent()) {

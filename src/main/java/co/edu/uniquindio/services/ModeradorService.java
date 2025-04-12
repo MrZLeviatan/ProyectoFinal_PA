@@ -4,6 +4,7 @@ import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.moderador.EditarModeradorDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.exeptions.CiudadNoExisteException;
+import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.exeptions.RangoPaginaNoPermitidoException;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public interface ModeradorService {
      * @return Objeto que contiene los detalles del moderador.
      * @throws Exception: Si el usuario no se encuentra oh ocurre un error.
      */
-    UsuarioDTO obtenerModeradorId(String id) throws Exception;
+        UsuarioDTO obtenerModeradorId(String id) throws ElementoNoEncontradoException;
 
     /**
      * Obtiene un moderador basado en su dirección de correo electrónico.
@@ -38,7 +39,7 @@ public interface ModeradorService {
      * @return Objeto que contiene los detalles del moderador.
      * @throws Exception: Si el usuario no se encuentra oh ocurre un error.
      */
-    UsuarioDTO obtenerModeradorEmail(String email) throws Exception;
+    UsuarioDTO obtenerModeradorEmail(String email) throws ElementoNoEncontradoException;
 
     /**
      * Obtiene una lista de usuarios filtrada por nombre y/o ciudad.

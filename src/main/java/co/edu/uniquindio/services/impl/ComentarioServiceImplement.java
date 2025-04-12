@@ -25,6 +25,9 @@ public class ComentarioServiceImplement implements ComentarioService {
     @Autowired
     ReporteRepo reporteRepo;
 
+    private final WebSocketNotificationService socketNotificationService;
+    private final NotificacionServiceImplement notificacionServiceImplement;
+
 
     @Override
     public void agregarComentario(RegistrarComentarioDto comentario) throws Exception {
@@ -34,6 +37,8 @@ public class ComentarioServiceImplement implements ComentarioService {
             reporte.get().getComentarios().add(nuevoComentario);
             reporteRepo.save(reporte.get());
             comentarioRepo.save(nuevoComentario);
+            socketNotificationService.notificarClientes(); //notificaciones en tiempo real
+            notificacionServiceImplement.enviarNotificacion(); //notificaciones en caso de que la persona no este concectada
         }else {
             throw new ElementoNoEncontradoException("no existe el reporte con id "+ comentario.idReporte());
         }

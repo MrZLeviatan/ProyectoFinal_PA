@@ -13,11 +13,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.platform.commons.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,9 +32,6 @@ public class CategoriaImplementTest {
 
     @Autowired
     private CategoriaRepo categoriaRepo;
-
-    @Autowired
-    private CategoriaMapper categoriaMapper;
 
     private Categoria categoriaExistente;
 
@@ -50,6 +49,7 @@ public class CategoriaImplementTest {
     //elimina la categoria creada con el @BeforeEach para no tener datos repetidos
     @AfterEach
     public void tearDown() {
+
         categoriaRepo.deleteAll();
     }
 
@@ -73,7 +73,7 @@ public class CategoriaImplementTest {
         Categoria actualizada = categoriaRepo.findById(categoriaExistente.getId()).get();
         assertEquals("Tecnología Avanzada", actualizada.getNombre());
     }
-
+    private static final Logger logger = (Logger) LoggerFactory.getLogger(CategoriaImplementTest.class);
     @Test
     public void testEditarCategoriaInexistente() throws Exception {
         EditarCategoriaDto editar = new EditarCategoriaDto(
@@ -82,9 +82,10 @@ public class CategoriaImplementTest {
                 "Descripción"
         );
 
-        assertThrows(ElementoNoEncontradoException.class, () ->
+       Exception ex= assertThrows(ElementoNoEncontradoException.class, () ->
                 categoriaService.editarCategoria(editar));
 
+       logger.info(ex.getMessage());
     }
 
     @Test

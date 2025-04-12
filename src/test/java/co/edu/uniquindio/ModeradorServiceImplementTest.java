@@ -103,7 +103,7 @@ public class ModeradorServiceImplementTest {
     }
 
     @Test
-    void testObtenerModeradorPorEmail() throws Exception {
+    void testObtenerModeradorPorEmail()  {
         UsuarioDTO dto = moderadorService.obtenerModeradorEmail(usuario.getEmail());
         Assertions.assertEquals(usuario.getEmail(), dto.email());
     }
