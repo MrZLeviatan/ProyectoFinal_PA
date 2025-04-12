@@ -10,5 +10,4 @@ public interface NotificacionService {
     NotificacionDTOM buscarNotificacion(String idNotificacion);
     void EliminarNotificacion(String idNotificacion);
 
-
 }
