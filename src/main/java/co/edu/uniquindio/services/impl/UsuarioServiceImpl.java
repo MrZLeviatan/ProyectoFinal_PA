@@ -13,7 +13,7 @@ import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
 import co.edu.uniquindio.model.vo.CodigoValidacion;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
-import co.edu.uniquindio.services.EmailServicio;
+import co.edu.uniquindio.services.EmailService;
 import co.edu.uniquindio.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -26,7 +26,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuarioService {
 
-    private final EmailServicio emailServicio;;
+    private final EmailService emailService;;
     private final UsuarioRepo usuarioRepo;
     private final UsuarioMapper usuarioMapper;
 
@@ -122,7 +122,7 @@ public class UsuarioServiceImpl implements UsuarioService {
            // EmailServicio enviarEmail = new EmailServicioImp();
             String asunto = "Solicitud cambio de contraseña";
             String cuerpo = "su codigoActivacion de confirmacion es: "+ codigo;
-            emailServicio.enviarCorreo(new EmailDto(asunto,cuerpo,email));
+            emailService.enviarCorreo(new EmailDto(asunto,cuerpo,email));
             CodigoValidacion codigoValidacion = new CodigoValidacion();
             //guardamos el codigo en donde antes estaba el de activacion para no crear nuevas entidades
             codigoValidacion.setCodigo(codigo);
