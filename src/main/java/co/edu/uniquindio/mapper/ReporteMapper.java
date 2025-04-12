@@ -18,7 +18,6 @@ public interface ReporteMapper {
     @Mapping(target = "comentarios",expression = "java(new java.util.ArrayList<>())")
     @Mapping(target = "numeroImportancia", constant = "0")
     @Mapping(target = "historial",expression = "java(new java.util.ArrayList<>())" )
-    @Mapping(target = "verificado", constant = "PENDIENTE")
     @Mapping(target = "estadoReporte",constant = "NO_RESUELTO")
     Reporte toReporte(RegistrarReporteDto reporteDTO);
 
