@@ -4,9 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import co.edu.uniquindio.dto.EliminarCuentaDto;
-import co.edu.uniquindio.dto.moderador.CategoriaDTO;
-import co.edu.uniquindio.dto.moderador.CrearCategoriaDto;
-import co.edu.uniquindio.dto.moderador.EditarCategoriaDto;
 import co.edu.uniquindio.dto.moderador.EditarModeradorDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.services.ModeradorService;
@@ -20,7 +17,6 @@ import java.util.List;
 public class ModeradorController {
 
     private final ModeradorService moderadorService;
-
 
     @DeleteMapping("/eliminar")
     public ResponseEntity<Void> eliminarModerador(@RequestBody EliminarCuentaDto cuentaDto) throws Exception {
@@ -51,6 +47,4 @@ public class ModeradorController {
                                                            @RequestParam int size) throws Exception {
         return ResponseEntity.ok(moderadorService.listarUsuarios(nombre, ciudad, pagina, size));
     }
-
-
 }
