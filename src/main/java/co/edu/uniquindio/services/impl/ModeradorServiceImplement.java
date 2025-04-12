@@ -3,9 +3,9 @@ package co.edu.uniquindio.services.impl;
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.moderador.EditarModeradorDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
-import co.edu.uniquindio.exeptions.CiudadNoExisteException;
-import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.RangoPaginaNoPermitidoException;
+import co.edu.uniquindio.exceptions.CiudadNoExisteException;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.RangoPaginaNoPermitidoException;
 import co.edu.uniquindio.mapper.UsuarioMapper;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.Ciudad;
@@ -81,7 +81,9 @@ public class ModeradorServiceImplement implements ModeradorService {
 
 
     @Override
-    public List<UsuarioDTO> listarUsuarios(String nombre, String ciudad, int pagina, int size) throws RangoPaginaNoPermitidoException,CiudadNoExisteException {
+    public List<UsuarioDTO> listarUsuarios(String nombre, String ciudad, int pagina, int size) throws
+            RangoPaginaNoPermitidoException,CiudadNoExisteException {
+
         if (pagina < 0 || size <= 0) {
             throw new RangoPaginaNoPermitidoException("Página y tamaño deben ser mayores que 0");
         }
