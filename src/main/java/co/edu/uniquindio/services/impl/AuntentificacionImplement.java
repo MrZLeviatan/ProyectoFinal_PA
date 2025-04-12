@@ -55,21 +55,17 @@ public class AuntentificacionImplement implements AutentificacionService {
         String token = jwtUtils.generateToken(usuario.getId().toHexString(), crearClaims(usuario));
         return new TokenDTO(token);
     }
-
-    private Map<String, String> crearClaims(Usuario usuario) {
-
     /**
      * Crea los claims para el token JWT, que incluyen la información básica del usuario.
      *
      * @param usuario El usuario que va a ser autenticado.
      * @return Mapa con los claims a incluir en el token JWT.
      */
-        private Map<String, String> crearClaims(Usuario usuario) {
-            return Map.of(
-                    "email", usuario.getEmail(),
-                    "nombre", usuario.getNombre(),
-                    "rol", "ROLE_" + usuario.getRol().name()
-            );
-        }
+    private Map<String, String> crearClaims(Usuario usuario) {
+        return Map.of(
+                "email", usuario.getEmail(),
+                "nombre", usuario.getNombre(),
+                "rol", "ROLE_" + usuario.getRol().name()
+        );
     }
 }
