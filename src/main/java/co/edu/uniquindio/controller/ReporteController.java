@@ -16,17 +16,17 @@ public class ReporteController {
     @Autowired
     private ReporteService reporteService;
 
-    @PostMapping("/registrar")
+    @PostMapping()
     public void agregarReporte(@RequestBody RegistrarReporteDto reporte) throws Exception {
         reporteService.agregarReporte(reporte);
     }
 
-    @PutMapping("/actualizar")
+    @PutMapping()
     public void actualizarReporte(@RequestBody EditarReporteDto reporte) throws Exception {
         reporteService.actualizarReporte(reporte);
     }
 
-    @DeleteMapping("/eliminar")
+    @DeleteMapping()
     public void eliminarReporte(@RequestBody EliminarReporteDto reporteDto) throws Exception {
         reporteService.eliminarReporte(reporteDto);
     }
