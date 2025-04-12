@@ -41,7 +41,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             usuario.setEstadoUsuario(EstadoUsuario.ELIMINADO);
             usuarioRepo.save(usuario);
         }else {
-            throw new DatoErroneoException("La contraseña ingresada no coincide");
+            throw new CredencialesInvalidasException("La contraseña ingresada no coincide");
         }
     }
 
@@ -55,25 +55,15 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public UsuarioDTO obtenerUsuarioId(String id) throws ErrorMapperException {
+    public UsuarioDTO obtenerUsuarioId(String id)  {
         Usuario usuario= obtenerPorId(id);
-        UsuarioDTO usuarioDTO = usuarioMapper.toUsuarioDTO(usuario);
-        if(usuarioDTO!=null){
-            return usuarioDTO;
-        }else {
-            throw new ErrorMapperException("no se pudo mappear correctamente el usuario");
-        }
+        return usuarioMapper.toUsuarioDTO(usuario);
     }
 
     @Override
-    public UsuarioDTO obtenerUsuarioEmail(String email) throws ErrorMapperException {
+    public UsuarioDTO obtenerUsuarioEmail(String email) {
         Usuario usuario= obtenerUsuarioByEmail(email);
-        UsuarioDTO usuarioDTO = usuarioMapper.toUsuarioDTO(usuario);
-        if(usuarioDTO!=null){
-            return usuarioDTO;
-        }else{
-            throw new ErrorMapperException("no se pudo mappear correctamente el usuario");
-        }
+        return usuarioMapper.toUsuarioDTO(usuario);
     }
 
 
@@ -101,13 +91,13 @@ public class UsuarioServiceImpl implements UsuarioService {
 
 
     @Override
-    public void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws UsuarioException {
+    public void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws ElementoNoEncontradoException {
         Optional<Usuario> usuario = usuarioRepo.findByEmail(restablecerPasswordDto.email());
         if (usuario.isPresent()) {
             usuario.get().setPassword(restablecerPasswordDto.password());
             usuarioRepo.save(usuario.get());
         }else {
-            throw new UsuarioException("el correo ingresado no existe");
+            throw new ElementoNoEncontradoException("el correo ingresado no existe");
         }
     }
 
@@ -134,7 +124,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
 
         }else {
-            throw new PersimoDenegadoException("el usuario deberia activar su cuenta primero");
+            throw new PermisoDenegadoException("el usuario deberia activar su cuenta primero");
         }
     }
 
@@ -146,24 +136,24 @@ public class UsuarioServiceImpl implements UsuarioService {
         // Obtenemos el usuario y verificamos si existe en la base de datos
         Optional<Usuario> usuarioOptional = usuarioRepo.findById(new ObjectId(activarCuentaDto.id()));
         if (usuarioOptional.isEmpty()) {
-            throw new UsuarioException("El ID no existe en el sistema");
+            throw new ElementoNoEncontradoException("El ID no existe en el sistema");
         }
 
         Usuario usuario = usuarioOptional.get();
         CodigoValidacion codigoValidacion = usuario.getCodigoValidacion();
 
         if (codigoValidacion == null) {
-            throw new UsuarioException("El código no existe en el sistema");
+            throw new ElementoNoEncontradoException("El código no existe en el sistema");
         }
 
         // Verificamos si el código de validación ha vencido
         if (isCodVen(codigoValidacion)) {
-            throw new UsuarioException("El código ingresado ya venció");
+            throw new CodigoExpiradoException("El código ingresado ya venció");
         }
 
-        // Verificamos si el código es correcto
+        // Verificamos si el código es correo
         if (!codigoValidacion.getCodigo().equals(activarCuentaDto.codigoActivacion().codigo())){
-            throw new UsuarioException("El código de confirmación no es correcto");
+            throw new CodigoIncorrectoException("El código de confirmación no es correcto");
         }
 
         // Eliminamos el código de validación del usuario

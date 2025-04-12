@@ -20,11 +20,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CategoriaImplement implements CategoriaService {
 
-    @Autowired
-    CategoriaRepo categoriaRepo;
+    private final CategoriaRepo categoriaRepo;
 
-    @Autowired
-    CategoriaMapper categoriaMapper;
+    private final CategoriaMapper categoriaMapper;
 
     @Override
     public void crearCategoria(CrearCategoriaDto categoriaDto) throws Exception {

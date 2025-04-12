@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 public class HistorialEstado {
 
     private LocalDateTime fecha;
-    private EstadoReporte estadoAnterior;
     private EstadoReporte estadoActual;
     private Usuario usuario;
     private String motivoCambio;

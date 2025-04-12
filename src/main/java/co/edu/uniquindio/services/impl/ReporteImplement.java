@@ -4,12 +4,14 @@ import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.dto.reporte.*;
 
 import co.edu.uniquindio.exeptions.ElementoNoEncontradoException;
-import co.edu.uniquindio.exeptions.PersimoDenegadoException;
+import co.edu.uniquindio.exeptions.PermisoDenegadoException;
 import co.edu.uniquindio.mapper.ReporteMapper;
 import co.edu.uniquindio.model.documentos.Categoria;
 import co.edu.uniquindio.model.documentos.Reporte;
 import co.edu.uniquindio.model.documentos.Usuario;
+import co.edu.uniquindio.model.enums.EstadoReporte;
 import co.edu.uniquindio.model.enums.EstadoResuelto;
+import co.edu.uniquindio.model.vo.HistorialEstado;
 import co.edu.uniquindio.model.vo.Ubicacion;
 import co.edu.uniquindio.repositorios.CategoriaRepo;
 import co.edu.uniquindio.repositorios.ReporteRepo;
@@ -21,6 +23,7 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,8 +44,19 @@ public class ReporteImplement implements ReporteService {
     @Override
     public void agregarReporte(RegistrarReporteDto reporte) throws ElementoNoEncontradoException {
         Usuario usuario = obtenerPorId(reporte.idUsuario());
-        Reporte nuevoReporte = reporteRepo.save(reporteMapper.toReporte(reporte));
+
+        Reporte reporteAux = reporteMapper.toReporte(reporte);
+        HistorialEstado historialEstado = new HistorialEstado();
+        historialEstado.setUsuario(usuario);
+        historialEstado.setEstadoActual(EstadoReporte.PENDIENTE);
+        historialEstado.setFecha(LocalDateTime.now());
+
+        List<HistorialEstado> lista = List.of(historialEstado);
+        reporteAux.setHistorial(lista);
+
+        Reporte nuevoReporte = reporteRepo.save(reporteAux);
         usuario.getReportes().add(nuevoReporte);
+
         usuarioRepo.save(usuario);
     }
 
@@ -75,7 +89,7 @@ public class ReporteImplement implements ReporteService {
             // Guarda los cambios del usuario
             usuarioRepo.save(usuario);
         } else {
-            throw new PersimoDenegadoException("El usuario no existe o la contraseña es incorrecta");
+            throw new PermisoDenegadoException("El usuario no existe o la contraseña es incorrecta");
         }
     }
 
