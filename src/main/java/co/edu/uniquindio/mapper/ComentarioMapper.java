@@ -1,6 +1,7 @@
 package co.edu.uniquindio.mapper;
 
 import co.edu.uniquindio.dto.comentario.ComentarioDTO;
+import co.edu.uniquindio.dto.comentario.RegistrarComentarioDto;
 import co.edu.uniquindio.model.documentos.Comentario;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -23,4 +24,11 @@ public interface ComentarioMapper {
 
     // Mapeo de una lista de Comentarios a una lista de ComentarioDTOs
     List<ComentarioDTO> toComentarioDTOList(List<Comentario> comentarios);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "idComentario", ignore = true)
+    @Mapping(target = "comentarios", expression = "java(new java.util.ArrayList<>())")
+    @Mapping(target = "fechaComentario", ignore = true)
+    Comentario toComentario(RegistrarComentarioDto comentarioDTO);
+
 }
