@@ -92,10 +92,11 @@ public class ModeradorController {
      */
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/listar-usuarios")
-    public ResponseEntity<List<UsuarioDTO>> listarUsuarios(@RequestParam(required = false) String nombre,
+    public ResponseEntity<MensajeDTO<List<UsuarioDTO>>> listarUsuarios(@RequestParam(required = false) String nombre,
                                                            @RequestParam(required = false) String ciudad,
                                                            @RequestParam int pagina,
                                                            @RequestParam int size) throws Exception {
-        return ResponseEntity.ok(moderadorService.listarUsuarios(nombre, ciudad, pagina, size));
+        List<UsuarioDTO> usuarios = moderadorService.listarUsuarios(nombre, ciudad, pagina, size);
+        return ResponseEntity.status(200).body(new MensajeDTO<>(false,usuarios));
     }
 }
