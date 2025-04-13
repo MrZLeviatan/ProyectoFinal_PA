@@ -6,9 +6,9 @@ package co.edu.uniquindio.dto.modeloDTO;
  * incluyendo el destinatario, el mensaje, el título de la notificación y el remitente.
  */
 public record CrearNotificacionDTO(
-        String CorreoDestinatario,
+        String destinatario,
         String mensaje,
         String titulo,
-        String correoRemitente
+        String remitente
 ) {
 }

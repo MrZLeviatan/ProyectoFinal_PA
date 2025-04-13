@@ -2,6 +2,7 @@ package co.edu.uniquindio.controller;
 import co.edu.uniquindio.dto.reporte.*;
 import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.services.ReporteService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,12 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("api/reportes")
+@RequiredArgsConstructor
 // Controlador encargado de gestionar los reportes dentro del sistema.
 // Incluye operaciones para registrar, actualizar, eliminar, buscar y marcar reportes con diferentes estados o etiquetas.
 public class ReporteController {
 
-    @Autowired
-    private ReporteService reporteService;
+
+    private final ReporteService reporteService;
 
     /**
      * Endpoint para registrar un nuevo reporte en el sistema.

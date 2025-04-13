@@ -1,5 +1,6 @@
 package co.edu.uniquindio.services;
 
+import co.edu.uniquindio.dto.modeloDTO.CrearNotificacionDTO;
 import co.edu.uniquindio.dto.modeloDTO.NotificacionDTOM;
 
 import java.util.List;
@@ -8,9 +9,10 @@ public interface NotificacionService {
 
     /**
      * Envía una notificación a un usuario específico.
+     *
      * @param notificacionDTOM: Objeto que contiene la información de la notificación a enviar.
      */
-    void enviarNotificacion(NotificacionDTOM notificacionDTOM);
+    void enviarNotificacion(CrearNotificacionDTO notificacionDTOM);
 
     /**
      * Recupera la lista de notificaciones recibidas por un usuario.
@@ -30,6 +32,7 @@ public interface NotificacionService {
      * Elimina una notificación del sistema a partir de su identificador único.
      * @param idNotificacion: Identificador único de la notificación a eliminar.
      */
+
     void EliminarNotificacion(String idNotificacion);
 
 }

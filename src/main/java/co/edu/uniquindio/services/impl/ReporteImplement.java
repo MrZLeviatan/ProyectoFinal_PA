@@ -1,6 +1,9 @@
 package co.edu.uniquindio.services.impl;
 
 import co.edu.uniquindio.constants.MensajesError;
+import co.edu.uniquindio.dto.modeloDTO.CrearNotificacionDTO;
+import co.edu.uniquindio.dto.modeloDTO.NotificacionDTO;
+import co.edu.uniquindio.dto.modeloDTO.NotificacionDTOM;
 import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.dto.reporte.*;
 
@@ -8,6 +11,7 @@ import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.exceptions.PermisoDenegadoException;
 import co.edu.uniquindio.mapper.ReporteMapper;
 import co.edu.uniquindio.model.documentos.Categoria;
+import co.edu.uniquindio.model.documentos.Notificacion;
 import co.edu.uniquindio.model.documentos.Reporte;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoReporte;
@@ -41,6 +45,8 @@ public class ReporteImplement implements ReporteService {
     private final CategoriaRepo categoriaRepo;
     private final ReporteMapper reporteMapper;
     private final PasswordEncoder passwordEncoder;
+    private final WebSocketNotificationService webSocketNotificationService;
+    private final NotificacionServiceImplement notificacionServiceImplement;
 
 
     /**
@@ -62,7 +68,32 @@ public class ReporteImplement implements ReporteService {
         Reporte nuevoReporte = reporteRepo.save(reporte);
         usuario.getReportes().add(nuevoReporte);
         usuarioRepo.save(usuario);
+
+        String mensaje = "Reporte agregado con exito";
+        String titulo = "Reporte creado";
+        String topic = "/topic/user/" + reporte.getIdUsuario() + "/reports";
+        String email= usuario.getEmail();
+        enviarNotificacion(mensaje,titulo,topic,email,"sistema");
         return reporteMapper.toReporteDTO(reporte);
+    }
+
+    public void enviarNotificacion(String mensaje, String titulo, String topic, String email,String remitente) {
+
+        CrearNotificacionDTO notificacion = new CrearNotificacionDTO(
+                email,
+                mensaje,
+                titulo,
+                remitente
+        );
+
+        NotificacionDTO notificacionDTO = new NotificacionDTO(
+                titulo,
+                mensaje,
+                topic
+        );
+
+        notificacionServiceImplement.enviarNotificacion(notificacion);
+        webSocketNotificationService.notificarPorTopic(notificacionDTO);
     }
 
 
@@ -86,6 +117,13 @@ public class ReporteImplement implements ReporteService {
         reporte.setCategoria(categoria);
         reporte.getFotos().clear();
         reporte.getFotos().addAll(dto.fotos());
+
+        String mensaje = "Reporte actualizado con exito";
+        String titulo = "Reporte actualizado";
+        String topic = "/topic/user/" + reporte.getIdUsuario() + "/reports";
+        String email= usuario.getEmail();
+        enviarNotificacion(mensaje,titulo,topic,email,"sistema");
+
         return reporteMapper.toReporteDTO(reporteRepo.save(reporte));
     }
 
@@ -111,6 +149,13 @@ public class ReporteImplement implements ReporteService {
         agregarHistorial(reporte,EstadoReporte.ELIMINADO,"fue eliminado por el usuario"+ idUsuario);
         usuarioRepo.save(usuario); // guardamos que uno de los reportes esta eliminado
         reporteRepo.save(reporte); //lo guardamos como eliminado
+
+
+        String mensaje = "Reporte eliminado con exito";
+        String titulo = "Reporte eliminado";
+        String topic = "/topic/user/" + reporte.getIdUsuario() + "/reports";
+        String email= usuario.getEmail();
+        enviarNotificacion(mensaje,titulo,topic,email,"sistema");
     }
 
     /**
@@ -147,7 +192,13 @@ public class ReporteImplement implements ReporteService {
     public void marcarReporteImportante(MarcarReporteDto reporteDto) throws Exception {
         Reporte reporte = obtenerReporte(reporteDto.idReporte());
         reporte.setNumeroImportancia(reporte.getNumeroImportancia() + 1);
-      reporteRepo.save(reporte);
+        reporteRepo.save(reporte);
+
+        String mensaje = "Reporte marcado como importante exitosamente";
+        String titulo = "Reporte marcado como importante";
+        String topic = "/topic/user/" + reporte.getIdUsuario() + "/reports";
+        String email= obtenerPorId(reporte.getIdUsuario().toString()).getEmail();
+        enviarNotificacion(mensaje,titulo,topic,email,"sistema");
     }
 
     /**
@@ -161,6 +212,11 @@ public class ReporteImplement implements ReporteService {
         Reporte reporte = obtenerReporte(reporteDto.idReporte());
         reporte.setNumeroImportancia(reporte.getNumeroImportancia() - 1);
         reporteRepo.save(reporte);
+        String mensaje = "Reporte quitado como importante exxitosamente";
+        String titulo = "Reporte quitado como importante";
+        String topic = "/topic/user/" + reporte.getIdUsuario() + "/reports";
+        String email= obtenerPorId(reporte.getIdUsuario().toString()).getEmail();
+        enviarNotificacion(mensaje,titulo,topic,email,"sistema");
     }
 
     /**
@@ -175,6 +231,11 @@ public class ReporteImplement implements ReporteService {
         Usuario usuario = obtenerPorId(reporteDto.idUsuario());
         usuario.getListaReportesFavorito().add(reporte);
         usuarioRepo.save(usuario);
+        String mensaje = "Reporte agregado con exito";
+        String titulo = "Reporte marcado como favorito";
+        String topic = "/topic/user/" + reporte.getIdUsuario() + "/reports";
+        String email= usuario.getEmail();
+        enviarNotificacion(mensaje,titulo,topic,email,"sistema");
     }
 
     /**
@@ -189,6 +250,11 @@ public class ReporteImplement implements ReporteService {
         Usuario usuario = obtenerPorId(reporteDto.idUsuario());
         usuario.getListaReportesFavorito().removeIf(r -> r.getId().equals(reporte.getId()));
         usuarioRepo.save(usuario);
+        String mensaje = "Reporte quitado con exito";
+        String titulo = "Reporte quirado como favorito";
+        String topic = "/topic/user/" + reporte.getIdUsuario() + "/reports";
+        String email= usuario.getEmail();
+        enviarNotificacion(mensaje,titulo,topic,email,"sistema");
     }
 
     /**
@@ -203,6 +269,11 @@ public class ReporteImplement implements ReporteService {
         reporte.setSolucionado(EstadoReporte.RESUELTO);
         agregarHistorial(reporte,EstadoReporte.RESUELTO,"");
         reporteRepo.save(reporte);
+        String mensaje = "Reporte marcado como resuelto";
+        String titulo = "Resolver reporte";
+        String topic = "/topic/user/" + reporte.getIdUsuario() + "/reports";
+        String email= obtenerPorId(reporte.getIdUsuario().toString()).getEmail();
+        enviarNotificacion(mensaje,titulo,topic,email,"sistema");
     }
 
     /**
@@ -217,6 +288,11 @@ public class ReporteImplement implements ReporteService {
         reporte.setSolucionado(EstadoReporte.NO_RESUELTO);
         agregarHistorial(reporte,EstadoReporte.NO_RESUELTO,"");
         reporteRepo.save(reporte);
+        String mensaje = "Reporte marcado como no resuelto";
+        String titulo = "Resolver reporte";
+        String topic = "/topic/user/" + reporte.getIdUsuario() + "/reports";
+        String email= obtenerPorId(reporte.getIdUsuario().toString()).getEmail();
+        enviarNotificacion(mensaje,titulo,topic,email,"sistema");
     }
 
     /**
@@ -254,6 +330,12 @@ public class ReporteImplement implements ReporteService {
         reporte.setEstadoReporte(dto.estadoActual());
         agregarHistorial(reporte,dto.estadoActual(),"");
         reporteRepo.save(reporte);
+
+        String mensaje = "El nuevo estado del reporte es "+ dto.estadoActual() + dto.motivo();
+        String titulo = "Gestion de reporte";
+        String topic = "/topic/user/" + reporte.getIdUsuario() + "/reports";
+        String email= obtenerPorId(reporte.getIdUsuario().toString()).getEmail();
+        enviarNotificacion(mensaje,titulo,topic,email,"sistema");
 
     }
 

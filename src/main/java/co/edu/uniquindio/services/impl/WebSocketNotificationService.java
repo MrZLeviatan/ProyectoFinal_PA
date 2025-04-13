@@ -31,5 +31,9 @@ public class WebSocketNotificationService {
     public void notificarClienteEspecifico(String userId, NotificacionDTO notificacion) {
         messagingTemplate.convertAndSend("/topic/user/" + userId + "/reports", notificacion);
     }
+
+    public void notificarPorTopic(NotificacionDTO notificacion) {
+        messagingTemplate.convertAndSend(notificacion.topic(), notificacion);
+    }
 }
 

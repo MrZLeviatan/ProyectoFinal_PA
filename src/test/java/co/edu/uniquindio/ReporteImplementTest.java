@@ -7,7 +7,10 @@ import co.edu.uniquindio.exceptions.PermisoDenegadoException;
 import co.edu.uniquindio.model.documentos.Categoria;
 import co.edu.uniquindio.model.documentos.Reporte;
 import co.edu.uniquindio.model.documentos.Usuario;
+import co.edu.uniquindio.model.enums.Ciudad;
 import co.edu.uniquindio.model.enums.EstadoReporte;
+import co.edu.uniquindio.model.enums.EstadoUsuario;
+import co.edu.uniquindio.model.enums.Rol;
 import co.edu.uniquindio.repositorios.CategoriaRepo;
 import co.edu.uniquindio.repositorios.ReporteRepo;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
@@ -24,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,6 +65,7 @@ public class ReporteImplementTest {
         Usuario usuario = new Usuario();
         usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
         usuario.setReportes(new ArrayList<>());
+        usuario.setNotificaciones(new ArrayList<>());
         usuarioRepo.save(usuario);
         RegistrarReporteDto dto = new RegistrarReporteDto(
                 "Reporte de prueba",
@@ -88,6 +93,8 @@ public class ReporteImplementTest {
         Categoria categoriaGuardada= categoriaRepo.save(categoria);
         Usuario usuario = new Usuario();
         usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
+        usuario.setReportes(new ArrayList<>());
+        usuario.setNotificaciones(new ArrayList<>());
         usuarioRepo.save(usuario);
         Reporte reporte = new Reporte();
         reporte.setTitulo("Viejo título");
@@ -114,6 +121,7 @@ public class ReporteImplementTest {
         usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
         usuario.setPassword(passwordEncoder.encode("clave123"));
         usuario.setReportes(new ArrayList<>());
+        usuario.setNotificaciones(new ArrayList<>());
         usuarioRepo.save(usuario);
         Reporte reporte = new Reporte();
         reporte.setIdUsuario(usuario.getId());
@@ -133,11 +141,19 @@ public class ReporteImplementTest {
 
     @Test
     void marcarReporteImportante_deberiaIncrementarImportancia() throws Exception {
+
+        Usuario usuario = new Usuario();
+        usuario.setId(new ObjectId());
+        usuario.setNotificaciones(new ArrayList<>());
+        usuario.setReportes(new ArrayList<>());
+        usuario.setNotificaciones(new ArrayList<>());
+        usuarioRepo.save(usuario);
         Reporte reporte = new Reporte();
         reporte.setNumeroImportancia(0);
+        reporte.setIdUsuario(usuario.getId());
         Reporte reporteGuardado= reporteRepo.save(reporte);
-        MarcarReporteDto dto = new MarcarReporteDto("1231322",
-
+        MarcarReporteDto dto = new MarcarReporteDto(
+                usuario.getId().toString(),
                 reporteGuardado.getId().toString()
         );
         reporteService.marcarReporteImportante(dto);
@@ -225,9 +241,8 @@ public class ReporteImplementTest {
         Usuario usuario = new Usuario();
         usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
         usuario.setListaReportesFavorito(new ArrayList<>());
+        usuario.setNotificaciones(new ArrayList<>());
         String idUsuario= usuarioRepo.save(usuario).getId().toString();
-
-
         Reporte reporte = new Reporte();
         Reporte reporteGuardado = reporteRepo.save(reporte);
 
@@ -243,12 +258,32 @@ public class ReporteImplementTest {
 
     @Test
     void marcarComoResuelto_deberiaActualizarEstado() throws Exception {
+        Usuario usuario = new Usuario();
+        usuario.setId(new ObjectId());
+        usuario.setNombre("Usuario");
+        usuario.setEmail("andrey3681.ay@gmail.com");
+        usuario.setReportes(new ArrayList<>());
+        usuario.setRol(Rol.USUARIO);
+        usuario.setPassword(passwordEncoder.encode("1234"));
+        usuario.setEstadoUsuario(EstadoUsuario.ACTIVO);
+        usuario.setCiudad(Ciudad.ARMENIA);
+        usuario.setDireccion("mi casa");
+        usuario.setNotificaciones(new ArrayList<>());
+        usuario.setListaReportesFavorito(new ArrayList<>());
+        usuario.setFechaRegistro(LocalDateTime.now());
+
+        String idUsuario= usuario.getId().toString();
+
+
         // Arrange
         Reporte reporte = new Reporte();
         reporte.setSolucionado(EstadoReporte.NO_RESUELTO);
+        reporte.setIdUsuario(usuario.getId());
         Reporte reporteGuardado= reporteRepo.save(reporte);
+        usuarioRepo.save(usuario);
 
-        reporteService.marcarReporteResuelto(new MarcarReporteDto(" lol",reporteGuardado.getId().toString()));
+
+        reporteService.marcarReporteResuelto(new MarcarReporteDto(idUsuario,reporteGuardado.getId().toString()));
 
         Reporte actualizado = reporteRepo.findById(reporte.getId()).orElseThrow();
         Assertions.assertEquals(EstadoReporte.RESUELTO, actualizado.getSolucionado());

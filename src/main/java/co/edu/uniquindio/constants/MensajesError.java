@@ -1,9 +1,6 @@
 package co.edu.uniquindio.constants;
 
 public class MensajesError {
-
-
-
     //MENSAJES ERROR USUARIO
     public static final String USARIO_NO_ENCONTRADO = "No existe el usuario";
     public static final String USUARIO_NO_ACTIVADO = "El usuario debe activarse primero";
@@ -19,6 +16,10 @@ public class MensajesError {
 
     //MENSAJES ERROR COMENTARIO
     public static final String COMENTARIO_NO_ENCONTRADO = "No existe el comentario";
+
+
+    //NOTIFICACIONES
+    public static final String NOTIFICACION_NO_ENCONTRADO = "No existe la notificacion";
 
 
     //ERRORES GENERALES

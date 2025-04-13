@@ -1,6 +1,5 @@
 package co.edu.uniquindio.dto.modeloDTO;
 
-import co.edu.uniquindio.dto.reporte.UbicacionDTO;
 import co.edu.uniquindio.model.enums.EstadoNotificacion;
 
 import java.time.LocalDateTime;
@@ -12,13 +11,11 @@ import java.time.LocalDateTime;
  * el ID del reporte asociado y el estado de la notificación.
  */
 public record NotificacionDTOM(
-        String CorreoDestinatario,
+        String destinatario,
         String mensaje,
         LocalDateTime fecha,
-        String CorreoRemitente,
+        String remitente,
         String titulo,
-        UbicacionDTO ubicacionReporte,
-        String IDReporteAsociado,
-        EstadoNotificacion estadoNotificacion
+        EstadoNotificacion estado
 ) {
 }

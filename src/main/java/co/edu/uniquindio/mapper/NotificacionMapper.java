@@ -1,5 +1,6 @@
 package co.edu.uniquindio.mapper;
 
+import co.edu.uniquindio.dto.modeloDTO.CrearNotificacionDTO;
 import co.edu.uniquindio.dto.modeloDTO.NotificacionDTOM;
 import co.edu.uniquindio.model.documentos.Notificacion;
 import org.mapstruct.Mapper;
@@ -19,8 +20,7 @@ public interface NotificacionMapper {
      * @param notificacion El objeto `Notificacion` a transformar.
      * @return El objeto `NotificacionDTOM` correspondiente.
      */
-    @Mapping(target = "CorreoDestinatario", ignore = true) // Se ignora el campo `CorreoDestinatario` en el mapeo
-    @Mapping(target = "CorreoRemitente", ignore = true) // Se ignora el campo `CorreoRemitente` en el mapeo
+
     NotificacionDTOM toNotificacionDTO(Notificacion notificacion);
 
     /**
@@ -30,5 +30,12 @@ public interface NotificacionMapper {
      * @return La lista de objetos `NotificacionDTOM` correspondientes.
      */
     List<NotificacionDTOM> toNotificacionDTOList(List<Notificacion> notificaciones);
+
+
+    @Mapping(target = "id",ignore = true)
+    @Mapping(target = "estado", constant = "SIN_LEER" )
+    Notificacion CrearNotificacionDTOtoNotificacion(CrearNotificacionDTO crearNotificacionDTO);
+
+
 }
 

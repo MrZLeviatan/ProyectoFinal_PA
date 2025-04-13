@@ -21,12 +21,17 @@ import java.time.LocalDateTime;
 public class Notificacion {
 
     @Id private ObjectId id;
-    @DBRef private ObjectId idDestinatario,idRemitente,IDReporteAsociado;
-    private String mensaje,titulo;
-    private Ubicacion ubicacionReporte;
-    private EstadoNotificacion estadoNotificacion;
+    private String mensaje,titulo,remitente,destinatario;
     private LocalDateTime fecha;
+    private EstadoNotificacion estado;
 
+    public EstadoNotificacion getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoNotificacion estado) {
+        this.estado = estado;
+    }
 
     public ObjectId getId() {
         return id;
@@ -36,29 +41,6 @@ public class Notificacion {
         this.id = id;
     }
 
-    public ObjectId getIdDestinatario() {
-        return idDestinatario;
-    }
-
-    public void setIdDestinatario(ObjectId idDestinatario) {
-        this.idDestinatario = idDestinatario;
-    }
-
-    public ObjectId getIdRemitente() {
-        return idRemitente;
-    }
-
-    public void setIdRemitente(ObjectId idRemitente) {
-        this.idRemitente = idRemitente;
-    }
-
-    public ObjectId getIDReporteAsociado() {
-        return IDReporteAsociado;
-    }
-
-    public void setIDReporteAsociado(ObjectId IDReporteAsociado) {
-        this.IDReporteAsociado = IDReporteAsociado;
-    }
 
     public String getMensaje() {
         return mensaje;
@@ -76,20 +58,12 @@ public class Notificacion {
         this.titulo = titulo;
     }
 
-    public Ubicacion getUbicacionReporte() {
-        return ubicacionReporte;
+    public String getRemitente() {
+        return remitente;
     }
 
-    public void setUbicacionReporte(Ubicacion ubicacionReporte) {
-        this.ubicacionReporte = ubicacionReporte;
-    }
-
-    public EstadoNotificacion getEstadoNotificacion() {
-        return estadoNotificacion;
-    }
-
-    public void setEstadoNotificacion(EstadoNotificacion estadoNotificacion) {
-        this.estadoNotificacion = estadoNotificacion;
+    public void setRemitente(String remitente) {
+        this.remitente = remitente;
     }
 
     public LocalDateTime getFecha() {
@@ -98,5 +72,13 @@ public class Notificacion {
 
     public void setFecha(LocalDateTime fecha) {
         this.fecha = fecha;
+    }
+
+    public String getDestinatario() {
+        return destinatario;
+    }
+
+    public void setDestinatario(String destinatario) {
+        this.destinatario = destinatario;
     }
 }
