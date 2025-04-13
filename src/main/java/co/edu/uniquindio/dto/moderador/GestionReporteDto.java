@@ -16,6 +16,7 @@ public record GestionReporteDto(
         @NotNull EstadoReporte estadoAnterior,
         @NotNull EstadoReporte estadoActual,
         @NotBlank String idUsuario,
-        @NotBlank @Length(max = 200) String motivo
+        @NotBlank @Length(max = 200) String motivo,
+        @NotBlank String idReporte
 ) {
 }

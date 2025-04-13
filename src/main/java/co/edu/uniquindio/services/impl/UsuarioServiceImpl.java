@@ -1,4 +1,5 @@
 package co.edu.uniquindio.services.impl;
+import co.edu.uniquindio.constants.MensajesError;
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.EmailDto;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
@@ -10,12 +11,16 @@ import co.edu.uniquindio.exceptions.*;
 import co.edu.uniquindio.mapper.UsuarioMapper;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
+import co.edu.uniquindio.model.enums.Rol;
 import co.edu.uniquindio.model.vo.CodigoValidacion;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.EmailService;
 import co.edu.uniquindio.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -28,21 +33,44 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final EmailService emailService;;
     private final UsuarioRepo usuarioRepo;
     private final UsuarioMapper usuarioMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void eliminarUsuario(EliminarCuentaDto cuentaDto) throws Exception {
-        Usuario usuario= obtenerPorId(cuentaDto.id());
-        if(usuario.getPassword().equals(cuentaDto.password())){
-            usuario.setEstadoUsuario(EstadoUsuario.ELIMINADO);
-            usuarioRepo.save(usuario);
-        }else {
-            throw new CredencialesInvalidasException("La contraseña ingresada no coincide");
+    public void eliminarUsuario(EliminarCuentaDto cuentaDto) throws ElementoNoEncontradoException,PermisoDenegadoException,CredencialesInvalidasException{
+        Usuario usuarioActual = obtenerUsuarioAutenticado();
+        Usuario usuarioObjetivo = obtenerPorId(cuentaDto.id());
+
+        // Si es MODERADOR puede eliminar directamente a cualquier usuario
+        if (usuarioActual.getRol() == Rol.MODERADOR) {
+            usuarioObjetivo.setEstadoUsuario(EstadoUsuario.ELIMINADO);
+            usuarioRepo.save(usuarioObjetivo);
+            return;
         }
+
+        // Si intenta eliminar a otro usuario diferente al suyo → NO PERMITIDO
+        if (!usuarioActual.getId().equals(usuarioObjetivo.getId())) {
+            throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
+        }
+
+        // Verificar contraseña para eliminarse a sí mismo
+        if (!passwordEncoder.matches(cuentaDto.password(), usuarioObjetivo.getPassword())) {
+            throw new CredencialesInvalidasException(MensajesError.CREDENCIALES_INVALIDAS);
+        }
+
+        // Marcar como eliminado
+        usuarioObjetivo.setEstadoUsuario(EstadoUsuario.ELIMINADO);
+        usuarioRepo.save(usuarioObjetivo);
+
     }
+
 
     @Override
     public void actualizarUsuario(EditarUsuarioDto usuario) throws Exception {
+        String idUsario = obtenerIdToken();
         Usuario cuentaModificada = obtenerPorId(usuario.id());
+        if(!idUsario.equals(usuario.id())){
+            throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
+        }
         cuentaModificada.setNombre(usuario.nombre());
         cuentaModificada.setDireccion(usuario.direccion());
         cuentaModificada.setCiudad(usuario.ciudad());
@@ -67,55 +95,59 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public void crearUsuario(RegistrarUsuarioDto usuarioDTO) throws ElementoRepetidoException {
         if(existeEmail(usuarioDTO.email())){
-//            Usuario usuario= obtenerUsuarioByEmail(usuarioDTO.email());
-//            if(usuario.getEstadoUsuario()==EstadoUsuario.ELIMINADO){
-//                // que hacemos
-//            }else {
-//                throw new ElementoRepetidoException("el correo se encuentra registrado");
-//            }
-            throw new ElementoRepetidoException("el correo se encuentra registrado");
+            Usuario usuario= obtenerUsuarioByEmail(usuarioDTO.email());
+            if(usuario.getEstadoUsuario()==EstadoUsuario.ELIMINADO){
+                usuario.setEstadoUsuario(EstadoUsuario.INACTIVO);
+                usuarioRepo.save(usuario);
+                return;
+            }else {
+                throw new ElementoRepetidoException(MensajesError.CORREO_REGISTRADO);
+            }
         }
         //el usuarioDto se transforma en un usuario nuevo
         Usuario usuario = usuarioMapper.toDocument(usuarioDTO);
+        usuario.setPassword(passwordEncoder.encode(usuarioDTO.password()));
         //guardamos el usuario en el repositorio
         usuarioRepo.save(usuario);
     }
+
 
     @Override
     public void restablecerPassword(RestablecerPasswordDto restablecerPasswordDto) throws ElementoNoEncontradoException {
         Optional<Usuario> usuario = usuarioRepo.findByEmail(restablecerPasswordDto.email());
         if (usuario.isPresent()) {
-            usuario.get().setPassword(restablecerPasswordDto.password());
+            usuario.get().setPassword(passwordEncoder.encode(restablecerPasswordDto.password()));
             usuarioRepo.save(usuario.get());
         }else {
-            throw new ElementoNoEncontradoException("el correo ingresado no existe");
+            throw new ElementoNoEncontradoException(MensajesError.CORREO_NO_ENCONTRADO);
         }
     }
 
     @Override
     public void solicitarRestablecer(String email) throws Exception {
         if(!existeEmail(email)) {
-            throw new ElementoNoEncontradoException("el correo ingresado no existe");
+            throw new ElementoNoEncontradoException(MensajesError.CORREO_NO_ENCONTRADO);
         }
         Usuario usuario= obtenerUsuarioByEmail(email);
         if(usuario.getEstadoUsuario().equals(EstadoUsuario.ELIMINADO)){
             throw new ElementoNoEncontradoException("El usuario fue eliminado");
         }
         if(usuario.getEstadoUsuario().equals(EstadoUsuario.ACTIVO)){
+            //generamos el codigo de validado
             String codigo= generarCodigoActivacion();
-           // EmailServicio enviarEmail = new EmailServicioImp();
             String asunto = "Solicitud cambio de contraseña";
             String cuerpo = "su codigoActivacion de confirmacion es: "+ codigo;
             emailService.enviarCorreo(new EmailDto(asunto,cuerpo,email));
+            //creamos el codigo de validacion
             CodigoValidacion codigoValidacion = new CodigoValidacion();
-            //guardamos el codigo en donde antes estaba el de activacion para no crear nuevas entidades
+            codigoValidacion.setHoraCreacion(LocalDateTime.now());
             codigoValidacion.setCodigo(codigo);
             usuario.setCodigoValidacion(codigoValidacion);
             usuarioRepo.save(usuario);
 
 
         }else {
-            throw new PermisoDenegadoException("el usuario deberia activar su cuenta primero");
+            throw new PermisoDenegadoException(MensajesError.USUARIO_NO_ACTIVADO);
         }
     }
 
@@ -124,13 +156,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public void activarCuenta(ActivarCuentaDto activarCuentaDto) throws Exception {
-        // Obtenemos el usuario y verificamos si existe en la base de datos
-        Optional<Usuario> usuarioOptional = usuarioRepo.findById(new ObjectId(activarCuentaDto.id()));
-        if (usuarioOptional.isEmpty()) {
-            throw new ElementoNoEncontradoException("El ID no existe en el sistema");
-        }
 
-        Usuario usuario = usuarioOptional.get();
+        Usuario usuario = obtenerUsuarioByEmail(activarCuentaDto.email());
         CodigoValidacion codigoValidacion = usuario.getCodigoValidacion();
 
         if (codigoValidacion == null) {
@@ -201,5 +228,16 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         return optionalCuenta.get();
+    }
+
+    private String obtenerIdToken() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return user.getUsername();
+    }
+
+    private Usuario obtenerUsuarioAutenticado() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return usuarioRepo.findById(new ObjectId(user.getUsername()))
+                .orElseThrow(() -> new ElementoNoEncontradoException("Usuario autenticado no encontrado"));
     }
 }

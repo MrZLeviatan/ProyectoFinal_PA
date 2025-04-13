@@ -50,6 +50,7 @@ public class ModeradorServiceImplement implements ModeradorService {
         if(!passwordEncoder.matches(cuentaDto.password(), usuario.getPassword())){
             throw new CredencialesInvalidasException(MensajesError.CREDENCIALES_INVALIDAS);
         }
+
         usuario.setEstadoUsuario(EstadoUsuario.ELIMINADO);
         usuarioRepo.save(usuario);
     }
@@ -61,6 +62,9 @@ public class ModeradorServiceImplement implements ModeradorService {
      * @throws ElementoNoEncontradoException Si el moderador no existe
      */
     private Usuario buscarUsuarioId(@NotBlank String id) {
+        if(!ObjectId.isValid(id)){
+            throw new ElementoNoEncontradoException(MensajesError.USARIO_NO_ENCONTRADO);
+        }
         return usuarioRepo.findById(new ObjectId(id))
                 .orElseThrow(() -> new ElementoNoEncontradoException(MensajesError.USARIO_NO_ENCONTRADO));
     }
@@ -72,6 +76,7 @@ public class ModeradorServiceImplement implements ModeradorService {
      */
     @Override
     public void actualizarModerador(EditarModeradorDto moderadorAct) throws ElementoNoEncontradoException {
+
         Usuario usuario= buscarUsuarioId(moderadorAct.id());
         usuario.setNombre(moderadorAct.nombre());
         usuario.setCiudad(moderadorAct.ciudad());
@@ -122,12 +127,26 @@ public class ModeradorServiceImplement implements ModeradorService {
         return usuarioMapper.toUsuarioDTO(usuarios);
     }
 
+    /**
+     * Valida que los parámetros de paginación sean correctos.
+     *
+     * @param pagina número de la página solicitada (debe ser mayor o igual a 0).
+     * @param size número de elementos por página (debe ser mayor que 0).
+     * @throws RangoPaginaNoPermitidoException si la página es menor que 0 o el tamaño es menor o igual a 0.
+     */
     private void validarRangoPagina(int pagina, int size) {
         if (pagina < 0 || size <= 0) {
             throw new RangoPaginaNoPermitidoException(MensajesError.VALORES_ERRONES_PAGE);
         }
     }
 
+    /**
+     * Convierte un string a su correspondiente valor del enum {@link Ciudad}.
+     *
+     * @param ciudad nombre de la ciudad en formato de texto.
+     * @return el valor del enum {@link Ciudad} correspondiente al nombre dado.
+     * @throws CiudadNoExisteException si el nombre no corresponde a ninguna ciudad válida del enum.
+     */
     private Ciudad obtenerCiudadEnum(String ciudad) {
         try {
             return Ciudad.valueOf(ciudad.toUpperCase());

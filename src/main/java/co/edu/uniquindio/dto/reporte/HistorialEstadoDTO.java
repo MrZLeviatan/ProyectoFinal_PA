@@ -10,15 +10,13 @@ import java.time.LocalDateTime;
  * Almacena información sobre el cambio, quién lo realizó y el motivo.
  *
  * @param fecha Fecha en la que se realizó el cambio de estado.
- * @param estadoAnterior Estado anterior del reporte antes del cambio.
- * @param estadoReporte Nuevo estado del reporte después del cambio.
+ * @param estadoActual Nuevo estado del reporte después del cambio.
  * @param usuario Usuario que realizó el cambio de estado.
  * @param motivoCambio Razón o justificación del cambio de estado.
  */
 public record HistorialEstadoDTO(
         LocalDateTime fecha,
-        EstadoReporte estadoAnterior,
-        EstadoReporte estadoReporte,
+        EstadoReporte estadoActual,
         UsuarioDTO usuario,
         String motivoCambio
 ) {

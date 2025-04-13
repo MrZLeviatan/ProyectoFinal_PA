@@ -10,10 +10,14 @@ import co.edu.uniquindio.model.enums.EstadoUsuario;
 import co.edu.uniquindio.model.vo.CodigoValidacion;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.UsuarioService;
+import org.bson.types.ObjectId;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -28,10 +32,15 @@ public class UsuarioImplementTest {
     @Autowired
     UsuarioRepo usuarioRepo;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     private String email = "juan.perez@example.com";
     private String password = "contrasena123";
 
     private Usuario usuario;
+
+
 
 
     //metodo para garantizar que el usuario para los test siempre este creado
@@ -52,6 +61,11 @@ public class UsuarioImplementTest {
 
         usuario = usuarioRepo.findByEmail(email).get();
     }
+
+    @AfterEach
+    public void tearDown() {
+        usuarioRepo.deleteAll();
+    }
     // agregar un usuario con correo repetido
     @Test
     public void crearUsuario() throws ElementoRepetidoException {
@@ -71,6 +85,7 @@ public class UsuarioImplementTest {
 
     //prueba de tratar de elimnar la cuenta de un usuario no registrado
     @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
     public void eliminarUsuarioNoExistente() throws ElementoRepetidoException {
         EliminarCuentaDto e = new EliminarCuentaDto("123","123");
         assertThrows(ElementoNoEncontradoException.class, () -> {
@@ -81,38 +96,41 @@ public class UsuarioImplementTest {
     // prueba de tratar de eliminar un cuanta de un usuario con id correcta pero contraseña erronea
     // para ejecutar este metodo deben haber realizado primero el test numero uno que agrega ese usuario ala base de datos
     @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
     public void eliminarUsuarioPasswordIncorrecta() throws Exception {
-        EliminarCuentaDto e = new EliminarCuentaDto(String.valueOf(usuario.getId()),"123");
+        String idAntigua= usuario.getId().toString();
+        usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
+        usuario.setPassword(passwordEncoder.encode(password));
+        usuarioRepo.save(usuario);
+        usuarioRepo.deleteById(new ObjectId(idAntigua));
+        EliminarCuentaDto e = new EliminarCuentaDto(usuario.getId().toString(),"123");
         assertThrows(CredencialesInvalidasException.class, () -> {
             usuarioService.eliminarUsuario(e);
         });
     }
 
     //aca se eliminara  al usuario juan.perez@example.com
+
     @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
     public void eliminarUsuario() throws Exception {
-        EliminarCuentaDto e = new EliminarCuentaDto(String.valueOf(usuario.getId()),usuario.getPassword());
+        String idAntigua= usuario.getId().toString();
+        usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
+        usuario.setPassword(passwordEncoder.encode(password));
+        usuarioRepo.save(usuario);
+
+        usuarioRepo.deleteById(new ObjectId(idAntigua));
+        EliminarCuentaDto e = new EliminarCuentaDto(String.valueOf(usuario.getId()),password);
         usuarioService.eliminarUsuario(e);
         // comprobamos que el estado cambio a ELIMINADO
         Usuario eliminado = usuarioRepo.findById(usuario.getId()).get();
         assertEquals(EstadoUsuario.ELIMINADO, eliminado.getEstadoUsuario());
     }
 
-    //volvermos a ingresar un usario ya registro pero que se encuentra eliminado
-//    @Test
-//    public void crearUsuario2() throws ElementoRepetidoException {
-//        RegistrarUsuarioDto usuario = new RegistrarUsuarioDto(
-//                "Juan Pérez", // nombre
-//                "Calle 123 #45-67", // dirección
-//                Ciudad.ARMENIA, // ciudad (enum, asegúrate que exista este valor en tu enum Ciudad)
-//                "juan.perez@example.com", // email
-//                "contrasena123", // password
-//                new CodigoValidacionDTO("ABC123", LocalDateTime.now()) // código de validación (suponiendo que esa clase tiene un constructor así)
-//        );
-//        usuarioService.crearUsuario(usuario);
-//    }
+
 
     @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
     public void actualizarUsuarioNoExiste() {
         EditarUsuarioDto editar = new EditarUsuarioDto(
                 "123",
@@ -127,14 +145,20 @@ public class UsuarioImplementTest {
         });
 
     }
+    ;
     @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
     public void testActualizarUsuario() throws Exception {
+        String idAntigua= usuario.getId().toString();
+        usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
+        usuario.setPassword(passwordEncoder.encode(password));
+        usuarioRepo.save(usuario);
+        usuarioRepo.deleteById(new ObjectId(idAntigua));
         EditarUsuarioDto editar = new EditarUsuarioDto(
                 usuario.getId().toString(),
                 "Nombre Modificado",
                 Ciudad.BOGOTA,
                 "Nueva dirección"
-
         );
 
         usuarioService.actualizarUsuario(editar);
@@ -178,18 +202,20 @@ public class UsuarioImplementTest {
         usuarioService.restablecerPassword(dto);
 
         Usuario actualizado = usuarioRepo.findByEmail(email).get();
-        assertEquals(nuevaClave, actualizado.getPassword());
+        assertTrue(passwordEncoder.matches(nuevaClave, actualizado.getPassword()));
     }
 
     @Test
     public void testSolicitarRestablecerCorrecto() throws Exception {
-        Usuario usuario= usuarioRepo.findByEmail("andrey3681@gmail.com").get();
-        usuario.setEstadoUsuario(EstadoUsuario.ACTIVO);
-        usuarioRepo.save(usuario);
+        Optional<Usuario> usuarioOptional = usuarioRepo.findByEmail(usuario.getEmail());
+        if(usuarioOptional.isPresent()) {
+            Usuario usuario = usuarioOptional.get();
+            usuario.setEstadoUsuario(EstadoUsuario.ACTIVO);
+            usuarioRepo.save(usuario);
+        }
+        usuarioService.solicitarRestablecer(usuario.getEmail());
 
-        usuarioService.solicitarRestablecer("andrey3681@gmail.com");
-
-        Usuario actualizado = usuarioRepo.findByEmail("andrey3681@gmail.com").get();
+        Usuario actualizado = usuarioRepo.findByEmail(usuario.getEmail()).get();
         assertNotNull(actualizado.getCodigoValidacion());
     }
 
@@ -214,7 +240,7 @@ public class UsuarioImplementTest {
         usuarioRepo.save(usuario);
 
         ActivarCuentaDto activar = new ActivarCuentaDto(
-                usuario.getId().toString(),
+                usuario.getEmail(),
                 new CodigoValidacionDTO(codigo, ahora)
         );
 
@@ -232,7 +258,7 @@ public class UsuarioImplementTest {
         usuarioRepo.save(usuario);
 
         ActivarCuentaDto dto = new ActivarCuentaDto(
-                usuario.getId().toString(),
+                usuario.getEmail(),
                 new CodigoValidacionDTO("INCORRECTO", LocalDateTime.now())
         );
 

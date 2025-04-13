@@ -32,7 +32,7 @@ public class CategoriaImplement implements CategoriaService {
      * Crea una nueva categoría a partir de un DTO.
      *
      * @param categoriaDto DTO con los datos de la nueva categoría.
-     * @throws Exception Si ocurre algún error durante la creación de la categoría.
+     * @throws ElementoRepetidoException Si ya existe una categoria con el nombre q se desea poner.
      */
     @Override
     public void crearCategoria(CrearCategoriaDto categoriaDto) throws ElementoNoEncontradoException {
@@ -48,15 +48,16 @@ public class CategoriaImplement implements CategoriaService {
      * Edita los detalles de una categoría existente.
      *
      * @param editarCategoriaDto DTO con los nuevos detalles para la categoría.
-     * @throws Exception Si ocurre algún error durante la edición de la categoría.
+     * @throws ElementoNoEncontradoException Si no exoste la categoria que se desea actualizar
+     * @throws ElementoRepetidoException si ya existe una categoria con el nombre que se desea poner
      */
     @Override
-    public void editarCategoria(EditarCategoriaDto editarCategoriaDto) throws ElementoNoEncontradoException {
+    public void editarCategoria(EditarCategoriaDto editarCategoriaDto) throws ElementoNoEncontradoException,ElementoRepetidoException {
         Categoria categoria = buscarCategoriaPorId(editarCategoriaDto.id());
         categoria.setNombre(editarCategoriaDto.nombre());
         categoria.setDescripcion(editarCategoriaDto.descripcion());
         if (categoriaRepo.existsByNombre(categoria.getNombre())) {
-            throw new IllegalArgumentException("La categoría con el nombre " + categoria.getNombre() + " ya existe");
+            throw new ElementoRepetidoException("La categoría con el nombre " + categoria.getNombre() + " ya existe");
         }
         categoriaRepo.save(categoria);
     }
@@ -68,7 +69,7 @@ public class CategoriaImplement implements CategoriaService {
      * @throws ElementoNoEncontradoException Si no se encuentra la categoría con el ID proporcionado.
      */
     @Override
-    public void eliminarCategoria(String id) {
+    public void eliminarCategoria(String id) throws ElementoNoEncontradoException {
         Categoria categoria= buscarCategoriaPorId(id);
         categoriaRepo.delete(categoria);
     }
@@ -78,7 +79,7 @@ public class CategoriaImplement implements CategoriaService {
      *
      * @param id ID de la categoría a obtener.
      * @return DTO con los datos de la categoría.
-     * @throws Exception Si ocurre algún error durante la obtención de la categoría.
+     * @throws ElementoNoEncontradoException Si ocurre algún error durante la obtención de la categoría.
      */
     @Override
     public CategoriaDTO obtenerCategoriaId(String id)  throws ElementoNoEncontradoException{
@@ -92,12 +93,16 @@ public class CategoriaImplement implements CategoriaService {
      * @throws Exception Si ocurre algún error durante la obtención de las categorías.
      */
     @Override
-    public List<CategoriaDTO> listarCategorias() {
-        return categoriaMapper.toCategoriaDTOList(
-                categoriaRepo.findAll().stream()
-                        .sorted(Comparator.comparing(Categoria::getNombre))
-                        .toList()
-        );
+    public List<CategoriaDTO> listarCategorias() throws Exception {
+        try {
+            return categoriaMapper.toCategoriaDTOList(
+                    categoriaRepo.findAll().stream()
+                            .sorted(Comparator.comparing(Categoria::getNombre))
+                            .toList()
+            );
+        }catch (Exception e){
+            throw new  Exception(e.getMessage());
+        }
     }
     /**
      * Busca una categoría por su ID.
@@ -106,7 +111,7 @@ public class CategoriaImplement implements CategoriaService {
      * @return La categoría correspondiente al ID.
      * @throws ElementoNoEncontradoException Si no se encuentra la categoría con el ID proporcionado.
      */
-    private Categoria buscarCategoriaPorId(String id) {
+    private Categoria buscarCategoriaPorId(String id) throws ElementoNoEncontradoException {
         return categoriaRepo.findById(new ObjectId(id))
                 .orElseThrow(() -> new ElementoNoEncontradoException("La categoría con id " + id + " no existe"));
     }

@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,9 +38,12 @@ public class ModeradorServiceImplementTest {
     @Autowired
     private UsuarioRepo usuarioRepo;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private Usuario usuario;
 
-
+    private String password= "12345";
     @BeforeEach
     public void setUp() {
         Optional<Usuario> usuario=usuarioRepo.findByEmail("juan@mail.com");
@@ -51,7 +55,7 @@ public class ModeradorServiceImplementTest {
                     "Calle 123",
                     Ciudad.BOGOTA,
                     "juan@mail.com",
-                    "1234",
+                    passwordEncoder.encode("12345"),
                     Rol.MODERADOR,
                     EstadoUsuario.ACTIVO,
                     new ArrayList<>(),
@@ -96,7 +100,7 @@ public class ModeradorServiceImplementTest {
 
     @Test
     void testEliminarModerador() throws Exception {
-        EliminarCuentaDto eliminarDto = new EliminarCuentaDto(usuario.getId().toString(),usuario.getPassword());
+        EliminarCuentaDto eliminarDto = new EliminarCuentaDto(usuario.getId().toString(),password);
         moderadorService.eliminarModerador(eliminarDto);
         Usuario eliminado = usuarioRepo.findById(usuario.getId()).orElseThrow();
         Assertions.assertEquals(EstadoUsuario.ELIMINADO, eliminado.getEstadoUsuario());

@@ -18,12 +18,12 @@ import java.util.List;
 @Document(collection = "comentarios")
 public class Comentario {
     @Id private ObjectId id;
-    @DBRef private ObjectId idComentario;
+    private ObjectId idComentario;
     private String contenido; // contenido
     private LocalDateTime fechaComentario; //en que fecha se realizó el comentario
     private ObjectId idUsuario; //quien realizo el comentario
     private ObjectId idReporte; //para saber a qué reporte esta asociado el comentario
-    @DBRef private List<Comentario> comentarios= new ArrayList<>();
+    @DBRef private List<Comentario> comentarios;
 
     public ObjectId getId() {
         return id;

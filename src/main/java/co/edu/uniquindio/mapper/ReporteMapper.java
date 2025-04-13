@@ -1,8 +1,10 @@
 package co.edu.uniquindio.mapper;
 
+import co.edu.uniquindio.dto.reporte.HistorialEstadoDTO;
 import co.edu.uniquindio.dto.reporte.RegistrarReporteDto;
 import co.edu.uniquindio.dto.reporte.ReporteDTO;
 import co.edu.uniquindio.model.documentos.Reporte;
+import co.edu.uniquindio.model.vo.HistorialEstado;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import java.util.List;
@@ -26,7 +28,8 @@ public interface ReporteMapper {
     @Mapping(target = "comentarios", expression = "java(new java.util.ArrayList<>())") // Se inicializa una lista vacía para comentarios
     @Mapping(target = "numeroImportancia", constant = "0") // Valor constante para numeroImportancia
     @Mapping(target = "historial", expression = "java(new java.util.ArrayList<>())") // Se inicializa una lista vacía para historial
-    @Mapping(target = "estadoReporte", constant = "NO_RESUELTO") // Valor constante para estadoReporte
+    @Mapping(target = "solucionado", constant = "NO_RESUELTO") // Valor constante para estadoReporte
+    @Mapping(target = "estadoReporte", ignore = true)
     Reporte toReporte(RegistrarReporteDto reporteDTO);
 
     /**
@@ -44,4 +47,11 @@ public interface ReporteMapper {
      * @return La lista de objetos `ReporteDTO` correspondientes.
      */
     List<ReporteDTO> toReporteDTOList(List<Reporte> reportes);
+
+    HistorialEstadoDTO toHistorialEstadoDTO(HistorialEstado historialEstado);
+
+    HistorialEstado toHistorialEstadoDTO(HistorialEstadoDTO historialEstadoDTO);
+
+
+    List<HistorialEstadoDTO> historialEstodotoDTO(List<HistorialEstado> historial);
 }

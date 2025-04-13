@@ -3,7 +3,6 @@ package co.edu.uniquindio.model.documentos;
 import co.edu.uniquindio.model.vo.HistorialEstado;
 import co.edu.uniquindio.model.vo.Ubicacion;
 import co.edu.uniquindio.model.enums.EstadoReporte;
-import co.edu.uniquindio.model.enums.EstadoResuelto;
 import co.edu.uniquindio.model.enums.EstadoSeveridad;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -32,7 +31,7 @@ public class Reporte {
     private String titulo;
     private ObjectId idUsuario; // hago referencia al usuario atravez de su id
     private Ubicacion ubicacion;
-    private EstadoResuelto estadoReporte;
+    private EstadoReporte estadoReporte, solucionado;
     @DBRef private Categoria categoria;
     @DBRef  private List<Comentario> comentarios;
     private List<HistorialEstado> historial;
@@ -40,6 +39,21 @@ public class Reporte {
     private int numeroImportancia;
     private EstadoSeveridad severidad;
 
+    public EstadoReporte getSolucionado() {
+        return solucionado;
+    }
+
+    public void setSolucionado(EstadoReporte solucionado) {
+        this.solucionado = solucionado;
+    }
+
+    public EstadoReporte getEstadoReporte() {
+        return estadoReporte;
+    }
+
+    public void setEstadoReporte(EstadoReporte estadoReporte) {
+        this.estadoReporte = estadoReporte;
+    }
 
     public ObjectId getId() {
         return id;
@@ -73,13 +87,7 @@ public class Reporte {
         this.ubicacion = ubicacion;
     }
 
-    public EstadoResuelto getEstadoReporte() {
-        return estadoReporte;
-    }
 
-    public void setEstadoReporte(EstadoResuelto estadoReporte) {
-        this.estadoReporte = estadoReporte;
-    }
 
     public Categoria getCategoria() {
         return categoria;

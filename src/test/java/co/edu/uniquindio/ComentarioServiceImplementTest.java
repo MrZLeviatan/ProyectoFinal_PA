@@ -123,7 +123,6 @@ public class ComentarioServiceImplementTest {
         );
         comentarioService.agregarRespuestaComentario(hijoDto);
 
-        Comentario hijo = comentarioRepo.findAll().stream().filter(c -> !c.equals(padre)).findFirst().orElseThrow();
 
         // Eliminar el padre
         EliminarComentarioDto eliminarDto = new EliminarComentarioDto(padre.getId().toHexString());

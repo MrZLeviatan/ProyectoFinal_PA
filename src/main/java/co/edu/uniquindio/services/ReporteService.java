@@ -14,14 +14,16 @@ public interface ReporteService {
      * @param reporte Datos del reporte a registrar.
      * @throws ElementoNoEncontradoException Sí ocurre un error durante el registro.
      */
-    void agregarReporte(RegistrarReporteDto reporte) throws ElementoNoEncontradoException;
+    ReporteDTO agregarReporte(RegistrarReporteDto reporte) throws Exception;
 
     /**
      * Actualiza la información de un reporte existente en el sistema.
+     *
      * @param reporte Datos actualizados del reporte.
+     * @return
      * @throws Exception Sí ocurre un error durante la actualización.
      */
-    void actualizarReporte(EditarReporteDto reporte) throws Exception;
+    ReporteDTO actualizarReporte(EditarReporteDto reporte) throws Exception;
 
     /**
      * Elimina un reporte del sistema basado en la información proporcionada.
@@ -36,7 +38,7 @@ public interface ReporteService {
      * @return ReporteDTO con la información del reporte encontrado.
      * @throws ElementoNoEncontradoException Si el reporte no existe o ocurre un error durante la búsqueda.
      */
-    ReporteDTO buscarReporte(String idReporte) throws ElementoNoEncontradoException;
+    ReporteDTO buscarReporte(String idReporte) throws Exception;
 
     /**
      * Recupera la lista de todos los reportes registrados en el sistema.

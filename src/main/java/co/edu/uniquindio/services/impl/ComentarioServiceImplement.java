@@ -10,8 +10,11 @@ import co.edu.uniquindio.repositorios.ReporteRepo;
 import co.edu.uniquindio.services.ComentarioService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +36,8 @@ public class ComentarioServiceImplement implements ComentarioService {
     @Override
     public void agregarComentario(RegistrarComentarioDto comentario) throws ElementoNoEncontradoException  {
         Comentario nuevoComentario = comentarioMapper.toComentario(comentario);
+        nuevoComentario.setFechaComentario(LocalDateTime.now());
+        nuevoComentario.setIdComentario(null);
         Reporte reporte = obtenerReportePorId(comentario.idReporte());
         Comentario cometarioGuardado=  comentarioRepo.save(nuevoComentario);
         reporte.getComentarios().add(cometarioGuardado);
@@ -51,16 +56,28 @@ public class ComentarioServiceImplement implements ComentarioService {
     }
 
     @Override
+    @Transactional
     public void eliminarComentario(EliminarComentarioDto comentario) throws ElementoNoEncontradoException {
         Comentario comentarioAEliminar = obtenerComentarioPorId(comentario.idComentario());
-        eliminarHijos(comentarioAEliminar);
-        Optional<Reporte> reporteOpt = reporteRepo.findById(comentarioAEliminar.getIdReporte());
-        if (reporteOpt.isPresent()) {
-            Reporte reporte = reporteOpt.get();
-            reporte.getComentarios().removeIf(c -> c.getId().equals(comentarioAEliminar.getId()));
-            reporteRepo.save(reporte);
-        }
+
+        eliminarHijosRecursivos(comentarioAEliminar.getId());
+
+        // Eliminar del reporte
+        reporteRepo.findById(comentarioAEliminar.getIdReporte())
+                .ifPresent(reporte -> {
+                    reporte.getComentarios().removeIf(c -> c.getId().equals(comentarioAEliminar.getId()));
+                    reporteRepo.save(reporte);
+                });
+
         comentarioRepo.delete(comentarioAEliminar);
+    }
+
+    private void eliminarHijosRecursivos(ObjectId idPadre) {
+        List<Comentario> hijos = comentarioRepo.findByIdComentario(idPadre);
+        for (Comentario hijo : hijos) {
+            eliminarHijosRecursivos(hijo.getId()); // Recursividad
+            comentarioRepo.delete(hijo); // Elimina cada hijo
+        }
     }
     @Override
     public ComentarioDTO buscarComentario(String idComentario) throws ElementoNoEncontradoException {
@@ -83,8 +100,8 @@ public class ComentarioServiceImplement implements ComentarioService {
         );
 
         Comentario respuesta = comentarioMapper.toComentario(dto);
+        respuesta.setFechaComentario(LocalDateTime.now());
         respuesta.setIdComentario(comentarioPadre.getId());
-
         Comentario respuestaGuardada = comentarioRepo.save(respuesta);
         comentarioPadre.getComentarios().add(respuestaGuardada);
         comentarioRepo.save(comentarioPadre);
@@ -95,13 +112,7 @@ public class ComentarioServiceImplement implements ComentarioService {
         return comentarioMapper.toComentarioDTOList(comentario.getComentarios());
     }
 
-    private void eliminarHijos(Comentario comentarioPadre) {
-        List<Comentario> hijos = comentarioRepo.findByIdComentario(comentarioPadre.getId());
-        for (Comentario hijo : hijos) {
-            eliminarHijos(hijo); // Recursividad: elimina los hijos del hijo
-            comentarioRepo.delete(hijo); // Elimina el hijo actual
-        }
-    }
+
     private Comentario obtenerComentarioPorId(String id) throws ElementoNoEncontradoException {
         return comentarioRepo.findById(new ObjectId(id))
                 .orElseThrow(() -> new ElementoNoEncontradoException(COMENTARIO_NO_ENCONTRADO + id));

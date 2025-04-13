@@ -1,6 +1,6 @@
 package co.edu.uniquindio.services.impl;
 
-import co.edu.uniquindio.dto.MensajeDTO;
+import co.edu.uniquindio.constants.MensajesError;
 import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.dto.reporte.*;
 
@@ -11,7 +11,7 @@ import co.edu.uniquindio.model.documentos.Categoria;
 import co.edu.uniquindio.model.documentos.Reporte;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoReporte;
-import co.edu.uniquindio.model.enums.EstadoResuelto;
+import co.edu.uniquindio.model.enums.Rol;
 import co.edu.uniquindio.model.vo.HistorialEstado;
 import co.edu.uniquindio.model.vo.Ubicacion;
 import co.edu.uniquindio.repositorios.CategoriaRepo;
@@ -21,17 +21,15 @@ import co.edu.uniquindio.services.ReporteService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,53 +37,56 @@ import java.util.stream.Collectors;
 public class ReporteImplement implements ReporteService {
 
     private final ReporteRepo reporteRepo;
-    private final ReporteMapper reporteMapper;
     private final UsuarioRepo usuarioRepo;
     private final CategoriaRepo categoriaRepo;
+    private final ReporteMapper reporteMapper;
+    private final PasswordEncoder passwordEncoder;
+
 
     /**
-     * Método para agregar un nuevo reporte.
-     *
-     * @param reporte Objeto DTO con los datos del reporte a registrar.
-     * @throws ElementoNoEncontradoException Si no se encuentra el usuario asociado al reporte.
+     * Método para agregar un nuevo dto.
+     * @param dto Objeto DTO con los datos del dto a registrar.
+     * @throws ElementoNoEncontradoException Si no se encuentra el usuario asociado al dto.
      */
     @Override
-    public void agregarReporte(RegistrarReporteDto reporte) throws ElementoNoEncontradoException {
-        Usuario usuario = obtenerPorId(reporte.idUsuario());
-
-        Reporte reporteAux = reporteMapper.toReporte(reporte);
-        HistorialEstado historialEstado = new HistorialEstado();
-        historialEstado.setUsuario(usuario);
-        historialEstado.setEstadoActual(EstadoReporte.PENDIENTE);
-        historialEstado.setFecha(LocalDateTime.now());
-
-        List<HistorialEstado> lista = List.of(historialEstado);
-        reporteAux.setHistorial(lista);
-
-        Reporte nuevoReporte = reporteRepo.save(reporteAux);
+    public ReporteDTO agregarReporte(RegistrarReporteDto dto) throws Exception {
+        Usuario usuario = obtenerUsuarioAutenticado();
+        if(usuario == null) {
+            throw new NullPointerException("Usuario no encontrado");
+        }
+        if (!Objects.equals(usuario.getId(), new ObjectId(dto.idUsuario()))){
+            throw new PermisoDenegadoException("no puedes crear reportes por otros usuarios");
+        }
+        Reporte reporte = reporteMapper.toReporte(dto);
+        agregarHistorial(reporte,EstadoReporte.PENDIENTE,"acaba de ser creado");
+        Reporte nuevoReporte = reporteRepo.save(reporte);
         usuario.getReportes().add(nuevoReporte);
-
         usuarioRepo.save(usuario);
+        return reporteMapper.toReporteDTO(reporte);
     }
+
 
     /**
      * Método para actualizar los datos de un reporte existente.
      *
-     * @param reporteDto Objeto DTO con los datos actualizados del reporte.
+     * @param dto Objeto DTO con los datos actualizados del reporte.
+     * @return
      * @throws Exception Si ocurre algún error durante la actualización.
      */
     @Override
-    public void actualizarReporte(EditarReporteDto reporteDto) throws Exception {
-        //aca debo verificar token
-        Reporte reporte = existeReporte(reporteDto.idReporte());
-        Categoria categoria= obtenerCategoria(reporteDto.categoria().id());
-        reporte.setTitulo(reporteDto.titulo());
-        reporte.setUbicacion(new Ubicacion(reporteDto.ubicacion().latitud(),reporteDto.ubicacion().altitud(),reporteDto.ubicacion().radio()));
+    public ReporteDTO actualizarReporte(EditarReporteDto dto) throws Exception {
+        Usuario usuario = obtenerUsuarioAutenticado();
+        Reporte reporte = obtenerReporte(dto.idReporte());
+        if (!Objects.equals(usuario.getId(), reporte.getIdUsuario())){
+            throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
+        }
+        Categoria categoria = obtenerCategoria(dto.categoria().id());
+        reporte.setTitulo(dto.titulo());
+        reporte.setUbicacion(new Ubicacion(dto.ubicacion().latitud(),dto.ubicacion().altitud(),dto.ubicacion().radio()));
         reporte.setCategoria(categoria);
         reporte.getFotos().clear();
-        reporte.getFotos().addAll(reporteDto.fotos());
-        //solo guardamos el reporte ya que como van por referencia no hay necesidad de mover el usuario
-        reporteRepo.save(reporte);
+        reporte.getFotos().addAll(dto.fotos());
+        return reporteMapper.toReporteDTO(reporteRepo.save(reporte));
     }
 
     /**
@@ -97,36 +98,19 @@ public class ReporteImplement implements ReporteService {
      */
     @Override
     public void eliminarReporte(EliminarReporteDto reporteDto) throws ElementoNoEncontradoException {
-        //verificar token
-       String idUsuario = obtenerIdToken();
-
-        Reporte reporte = existeReporte(reporteDto.idReporte());
-
+        String idUsuario = obtenerIdToken();
+        Reporte reporte = obtenerReporte(reporteDto.idReporte());
         if(!reporte.getIdUsuario().toString().equals(idUsuario)){
-            throw new PermisoDenegadoException("No tiene permisos para ejecutar esto");
+            throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
         }
-
         Usuario usuario = obtenerPorId(reporte.getIdUsuario().toString());
-        if (reporteDto.password().equals(usuario.getPassword())) {
-            // Elimina el reporte de la lista de reportes del usuario
-            usuario.getReportes().removeIf(r -> r.getId().equals(reporte.getId()));
-
-            // Elimina el reporte de la base de datos
-            reporteRepo.delete(reporte);
-
-            //debo agregar el historial de estados eliminado
-
-
-            // Guarda los cambios del usuario
-            usuarioRepo.save(usuario);
-        } else {
-            throw new PermisoDenegadoException("El usuario no existe o la contraseña es incorrecta");
+        if(!passwordEncoder.matches(reporteDto.password(), usuario.getPassword())){
+            throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
         }
-    }
-
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<MensajeDTO<String>> noResourceFoundExceptionHandler(NoResourceFoundException ex) {
-        return ResponseEntity.status(404).body(new MensajeDTO<>(true, "El recurso no fue encontrado"));
+        usuario.getReportes().removeIf(r -> r.getId().equals(reporte.getId()));
+        agregarHistorial(reporte,EstadoReporte.ELIMINADO,"fue eliminado por el usuario"+ idUsuario);
+        usuarioRepo.save(usuario); // guardamos que uno de los reportes esta eliminado
+        reporteRepo.save(reporte); //lo guardamos como eliminado
     }
 
     /**
@@ -137,9 +121,8 @@ public class ReporteImplement implements ReporteService {
      * @throws ElementoNoEncontradoException Si no se encuentra el reporte.
      */
     @Override
-    public ReporteDTO buscarReporte(String idReporte) throws ElementoNoEncontradoException {
-        Reporte reporte= existeReporte(idReporte);
-        return reporteMapper.toReporteDTO(reporte);
+    public ReporteDTO buscarReporte(String idReporte) throws ElementoNoEncontradoException{
+        return reporteMapper.toReporteDTO(obtenerReporte(idReporte));
     }
 
     /**
@@ -162,8 +145,7 @@ public class ReporteImplement implements ReporteService {
      */
     @Override
     public void marcarReporteImportante(MarcarReporteDto reporteDto) throws Exception {
-        Reporte reporte = existeReporte(reporteDto.idReporte());
-       // Usuario usuario = obtenerPorId(reporteDto.idUsuario());
+        Reporte reporte = obtenerReporte(reporteDto.idReporte());
         reporte.setNumeroImportancia(reporte.getNumeroImportancia() + 1);
       reporteRepo.save(reporte);
     }
@@ -176,14 +158,9 @@ public class ReporteImplement implements ReporteService {
      */
     @Override
     public void quitarReporteImportante(MarcarReporteDto reporteDto) throws Exception {
-        Reporte reporte = existeReporte(reporteDto.idReporte());
-        // Usuario usuario = obtenerPorId(reporteDto.idUsuario());
+        Reporte reporte = obtenerReporte(reporteDto.idReporte());
         reporte.setNumeroImportancia(reporte.getNumeroImportancia() - 1);
         reporteRepo.save(reporte);
-
-        //notificaciones
-        // notificaciones
-
     }
 
     /**
@@ -194,9 +171,9 @@ public class ReporteImplement implements ReporteService {
      */
     @Override
     public void marcarReporteFavorito(MarcarReporteDto reporteDto) throws Exception {
-        Reporte reporte = existeReporte(reporteDto.idReporte());
+        Reporte reporte = obtenerReporte(reporteDto.idReporte());
         Usuario usuario = obtenerPorId(reporteDto.idUsuario());
-        usuario.getReportes().add(reporte);
+        usuario.getListaReportesFavorito().add(reporte);
         usuarioRepo.save(usuario);
     }
 
@@ -208,9 +185,9 @@ public class ReporteImplement implements ReporteService {
      */
     @Override
     public void quitarReporteFavorito(MarcarReporteDto reporteDto) throws Exception {
-        Reporte reporte = existeReporte(reporteDto.idReporte());
+        Reporte reporte = obtenerReporte(reporteDto.idReporte());
         Usuario usuario = obtenerPorId(reporteDto.idUsuario());
-        usuario.getReportes().removeIf(r -> r.getId().equals(reporte.getId()));
+        usuario.getListaReportesFavorito().removeIf(r -> r.getId().equals(reporte.getId()));
         usuarioRepo.save(usuario);
     }
 
@@ -222,9 +199,9 @@ public class ReporteImplement implements ReporteService {
      */
     @Override
     public void marcarReporteResuelto(MarcarReporteDto reporteDto) throws Exception {
-        Reporte reporte = existeReporte(reporteDto.idReporte());
-        reporte.setEstadoReporte(EstadoResuelto.RESUELTO);
-        //crear historial
+        Reporte reporte = obtenerReporte(reporteDto.idReporte());
+        reporte.setSolucionado(EstadoReporte.RESUELTO);
+        agregarHistorial(reporte,EstadoReporte.RESUELTO,"");
         reporteRepo.save(reporte);
     }
 
@@ -236,8 +213,9 @@ public class ReporteImplement implements ReporteService {
      */
     @Override
     public void quitarReporteResuelto(MarcarReporteDto reporteDto) throws Exception {
-        Reporte reporte = existeReporte(reporteDto.idReporte());
-        reporte.setEstadoReporte(EstadoResuelto.NO_RESUELTO);
+        Reporte reporte = obtenerReporte(reporteDto.idReporte());
+        reporte.setSolucionado(EstadoReporte.NO_RESUELTO);
+        agregarHistorial(reporte,EstadoReporte.NO_RESUELTO,"");
         reporteRepo.save(reporte);
     }
 
@@ -250,76 +228,87 @@ public class ReporteImplement implements ReporteService {
      */
     @Override
     public List<HistorialEstadoDTO> obtenerHistorialEstadosReporte(String idReporte) throws Exception {
-        return List.of();
+        Reporte reporte= obtenerReporte(idReporte);
+        return reporteMapper.historialEstodotoDTO(reporte.getHistorial());
     }
 
     /**
      * Método para gestionar un reporte.
      *
-     * @param reporte Objeto DTO con los datos de gestión del reporte.
+     * @param dto Objeto DTO con los datos de gestión del reporte.
      * @throws Exception Si ocurre algún error durante el proceso.
      */
     @Override
-    public void gestionarReporte(GestionReporteDto reporte) throws Exception {
+    public void gestionarReporte(GestionReporteDto dto) throws Exception {
+        Usuario usuario= obtenerPorId(dto.idUsuario());
+
+        if(usuario.getRol()!= Rol.MODERADOR){
+            throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
+        }
+
+        Reporte reporte = obtenerReporte(dto.idReporte());
+
+        if(dto.estadoActual().equals(EstadoReporte.NO_RESUELTO)||dto.estadoActual().equals(EstadoReporte.RESUELTO)){
+            throw new PermisoDenegadoException("eso no se deberia de gestionar en este metodo");
+        }
+        reporte.setEstadoReporte(dto.estadoActual());
+        agregarHistorial(reporte,dto.estadoActual(),"");
+        reporteRepo.save(reporte);
+
     }
 
-    /**
-     * Método que obtiene un usuario a partir de su ID.
-     *
-     * @param id El ID del usuario que se quiere obtener.
-     * @return El usuario encontrado.
-     * @throws ElementoNoEncontradoException Si el ID no es válido o no se encuentra el usuario.
-     */
+
+
+
+
+    // ============================
+    // === MÉTODOS AUXILIARES  ====
+    // ============================
+
     private Usuario obtenerPorId(String id) throws ElementoNoEncontradoException {
-        // Buscamos el usuario que se quiere obtener
-        if (!ObjectId.isValid(id)) {
-            throw new ElementoNoEncontradoException("No se encontró el usuario con el id "+id);
-        }
-        Optional<Usuario> optionalCuenta = usuarioRepo.findById(new ObjectId(id));
-
-        // Si no se encontró el usuario, lanzamos una excepción
-        if(optionalCuenta.isEmpty()){
-            throw new ElementoNoEncontradoException("No se encontró el usuario con el id "+id);
-        }
-
-        return optionalCuenta.get();
+        validarObjectId(id, "usuario");
+        return usuarioRepo.findById(new ObjectId(id))
+                .orElseThrow(() -> new ElementoNoEncontradoException("No se encontró el usuario con id: " + id));
+    }
+    private Reporte obtenerReporte(@NotBlank String id) {
+        validarObjectId(id, "reporte");
+        return reporteRepo.findById(new ObjectId(id))
+                .orElseThrow(() -> new ElementoNoEncontradoException("No se encontró el reporte con id: " + id));
     }
 
-    /**
-     * Método que verifica si un reporte existe a partir de su ID.
-     *
-     * @param id El ID del reporte que se quiere verificar.
-     * @return El reporte encontrado.
-     * @throws ElementoNoEncontradoException Si el reporte no existe.
-     */
-    private Reporte existeReporte(@NotBlank String id) {
+    private Categoria obtenerCategoria(String id) throws Exception {
+        validarObjectId(id, "categoría");
+        return categoriaRepo.findById(new ObjectId(id))
+                .orElseThrow(() -> new ElementoNoEncontradoException("No se encontró la categoría con id: " + id));
+    }
+
+    private Usuario obtenerUsuarioAutenticado() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return usuarioRepo.findById(new ObjectId(user.getUsername()))
+                .orElseThrow(() -> new ElementoNoEncontradoException("Usuario autenticado no encontrado"));
+    }
+
+    private void validarObjectId(String id, String tipo) {
         if (!ObjectId.isValid(id)) {
-            throw new ElementoNoEncontradoException("No se encontró el reporte con la id "+id);
-        }
-        Optional<Reporte> reporte= reporteRepo.findById(new ObjectId(id));
-        if (reporte.isPresent()) {
-            return reporte.get();
-        }else {
-            throw new ElementoNoEncontradoException(" no existe el reporte con id "+ id);
+            throw new ElementoNoEncontradoException("El id de " + tipo + " no es válido: " + id);
         }
     }
 
-    /**
-     * Método que obtiene una categoría a partir de su ID.
-     *
-     * @param id El ID de la categoría que se quiere obtener.
-     * @return La categoría encontrada.
-     * @throws ElementoNoEncontradoException Si el ID no es válido o no se encuentra la categoría.
-     */
-    private Categoria obtenerCategoria(String id) {
-        if (!ObjectId.isValid(id)) {
-            throw new ElementoNoEncontradoException("No se encontró la categoria con el id "+id);
+    private void agregarHistorial(Reporte reporte, EstadoReporte estado, String motivo) {
+        HistorialEstado historial = new HistorialEstado();
+        historial.setEstadoActual(estado);
+        historial.setFecha(LocalDateTime.now());
+        historial.setMotivoCambio(motivo);
+
+        if (reporte.getHistorial() == null) {
+            reporte.setHistorial(new ArrayList<>());
         }
-        Optional<Categoria>categoria= categoriaRepo.findById(new ObjectId(id));
-        if (categoria.isPresent()) {
-            return categoria.get();
-        }else {
-            throw new ElementoNoEncontradoException("No se encontró la categoria con el id "+id);
-        }
+
+        reporte.getHistorial().add(historial);
+    }
+
+    private String obtenerIdToken() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return user.getUsername();
     }
 }

@@ -1,64 +1,256 @@
 package co.edu.uniquindio;
 
 import co.edu.uniquindio.dto.moderador.CategoriaDTO;
-import co.edu.uniquindio.dto.reporte.RegistrarReporteDto;
-import co.edu.uniquindio.dto.reporte.UbicacionDTO;
+import co.edu.uniquindio.dto.reporte.*;
+import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
+import co.edu.uniquindio.exceptions.PermisoDenegadoException;
 import co.edu.uniquindio.model.documentos.Categoria;
+import co.edu.uniquindio.model.documentos.Reporte;
 import co.edu.uniquindio.model.documentos.Usuario;
+import co.edu.uniquindio.model.enums.EstadoReporte;
 import co.edu.uniquindio.repositorios.CategoriaRepo;
 import co.edu.uniquindio.repositorios.ReporteRepo;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.impl.ReporteImplement;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 public class ReporteImplementTest {
+
     @Autowired
-    ReporteImplement reporteImplement;
-    @Autowired
-    CategoriaRepo categoriaRepo;
-    @Autowired
-    UsuarioRepo usuarioRepo;
+    private ReporteImplement reporteService;
+
     @Autowired
     private ReporteRepo reporteRepo;
 
-    @AfterEach
-    public void tearDown() {
+    @Autowired
+    private UsuarioRepo usuarioRepo;
+
+    @Autowired
+    private CategoriaRepo categoriaRepo;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    void setUp() {
+        // Limpiar colecciones antes de cada prueba
+        reporteRepo.deleteAll();
         usuarioRepo.deleteAll();
         categoriaRepo.deleteAll();
-        reporteRepo.deleteAll();
     }
+
     @Test
-    void agregarReporte() throws Exception {
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
+    void agregarReporte_deberiaGuardarCorrectamente() throws Exception {
         Usuario usuario = new Usuario();
-        usuario.setNombre("Usuario 1");
-        usuario.setEmail("Usuario1@gmail.com");
+        usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
         usuario.setReportes(new ArrayList<>());
-
-        Usuario usuario2 =usuarioRepo.save(usuario);
-
-        Categoria categoria = new Categoria();
-        categoria.setNombre("Categoria 1");
-        categoria.setDescripcion("soy una categoria");
-        Categoria categoria1= categoriaRepo.save(categoria);
-
-
-        RegistrarReporteDto reporte = new RegistrarReporteDto(
-                "mi_primerReporte",
-                usuario2.getId().toString(),
-                new UbicacionDTO(12,12,12),
-                new CategoriaDTO(categoria1.getId().toString(),categoria1.getNombre(),categoria1.getDescripcion()),
-                new ArrayList<>(Arrays.asList("imagen","imagen2","imagen3","imagen4","imagen5"))
+        usuarioRepo.save(usuario);
+        RegistrarReporteDto dto = new RegistrarReporteDto(
+                "Reporte de prueba",
+                "507f1f77bcf86cd799439011",
+                new UbicacionDTO(4,6, 4),
+                new CategoriaDTO("507f1f77bcf86cd799439012", "Categoría X","categoria1"),
+                List.of("foto1.jpg")
         );
-        reporteImplement.agregarReporte(reporte);
+        Categoria categoria = new Categoria();
+        categoria.setId(new ObjectId("507f1f77bcf86cd799439012"));
+        categoria.setNombre("Categoría X");
+        categoriaRepo.save(categoria);
+        ReporteDTO resultado = reporteService.agregarReporte(dto);
+        Assertions.assertNotNull(resultado);
+        Assertions.assertEquals("Reporte de prueba", resultado.titulo());
+        Assertions.assertEquals(1, usuarioRepo.findById(usuario.getId()).get().getReportes().size());
     }
 
+    @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
+    void actualizarReporte_deberiaActualizarCorrectamente() throws Exception {
+        Categoria categoria = new Categoria();
+        categoria.setId(new ObjectId("507f1f77bcf86cd799439012"));
+        categoria.setNombre("Categoría X");
+        Categoria categoriaGuardada= categoriaRepo.save(categoria);
+        Usuario usuario = new Usuario();
+        usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
+        usuarioRepo.save(usuario);
+        Reporte reporte = new Reporte();
+        reporte.setTitulo("Viejo título");
+        reporte.setIdUsuario(usuario.getId());
+        reporte.setCategoria(categoria);
+        reporte.setFotos(new ArrayList<>());
+        reporteRepo.save(reporte);
+        EditarReporteDto dto = new EditarReporteDto(
+                reporte.getId().toString(),
+                "Nuevo título",
+                new UbicacionDTO(1, 2, 10),
+                new CategoriaDTO(categoriaGuardada.getId().toString(), categoriaGuardada.getNombre(),categoriaGuardada.getDescripcion()),
+                List.of("nueva_foto.jpg")
+        );
+        ReporteDTO actualizado = reporteService.actualizarReporte(dto);
+        Assertions.assertEquals("Nuevo título", actualizado.titulo());
+        Assertions.assertEquals(1, actualizado.fotos().size());
+    }
+
+    @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
+    void eliminarReporte_deberiaEliminarCorrectamente() throws Exception {
+        Usuario usuario = new Usuario();
+        usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
+        usuario.setPassword(passwordEncoder.encode("clave123"));
+        usuario.setReportes(new ArrayList<>());
+        usuarioRepo.save(usuario);
+        Reporte reporte = new Reporte();
+        reporte.setIdUsuario(usuario.getId());
+        reporte.setSolucionado(EstadoReporte.PENDIENTE);
+        reporteRepo.save(reporte);
+        usuario.getReportes().add(reporte);
+        usuarioRepo.save(usuario);
+        EliminarReporteDto dto = new EliminarReporteDto(
+                reporte.getId().toString(),
+                "clave123"
+        );
+
+        reporteService.eliminarReporte(dto);
+        Reporte eliminado = reporteRepo.findById(reporte.getId()).orElseThrow();
+        Assertions.assertEquals(EstadoReporte.ELIMINADO, eliminado.getHistorial().get(eliminado.getHistorial().size() - 1).getEstadoActual());
+    }
+
+    @Test
+    void marcarReporteImportante_deberiaIncrementarImportancia() throws Exception {
+        Reporte reporte = new Reporte();
+        reporte.setNumeroImportancia(0);
+        Reporte reporteGuardado= reporteRepo.save(reporte);
+        MarcarReporteDto dto = new MarcarReporteDto("1231322",
+
+                reporteGuardado.getId().toString()
+        );
+        reporteService.marcarReporteImportante(dto);
+        Reporte actualizado = reporteRepo.findById(reporte.getId()).orElseThrow();
+        Assertions.assertEquals(1, actualizado.getNumeroImportancia());
+    }
+
+    @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
+    void agregarReporte_deberiaLanzarExcepcion_SiUsuarioNoExiste() {
+        RegistrarReporteDto dto = new RegistrarReporteDto(
+                "Reporte inválido",
+                "507f1f77bcf86cd799439099", // Usuario inexistente
+                new UbicacionDTO(1, 2, 3),
+                new CategoriaDTO("507f1f77bcf86cd799439012", "Categoría X", "categoria1"),
+                List.of("foto.jpg")
+        );
+        categoriaRepo.save(new Categoria(new ObjectId("507f1f77bcf86cd799439012"), "Categoría X", "categoria1"));
+        Assertions.assertThrows(ElementoNoEncontradoException.class, () -> {
+            reporteService.agregarReporte(dto);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
+    void actualizarReporte_deberiaLanzarExcepcion_SiReporteNoExiste() {
+        Usuario usuario = new Usuario();
+        usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
+        usuarioRepo.save(usuario);
+
+        EditarReporteDto dto = new EditarReporteDto(
+                new ObjectId().toString(),
+                "Nuevo título",
+                new UbicacionDTO(1, 2, 3),
+                new CategoriaDTO(new ObjectId().toString(), "Categoría falsa", "desc"),
+                List.of("foto.jpg")
+        );
+        Assertions.assertThrows(ElementoNoEncontradoException.class, () -> {
+            reporteService.actualizarReporte(dto);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
+    void eliminarReporte_deberiaLanzarExcepcion_SiContrasenaIncorrecta() {
+        // Arrange
+        Usuario usuario = new Usuario();
+        usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
+        usuario.setPassword(passwordEncoder.encode("claveCorrecta"));
+        usuarioRepo.save(usuario);
+
+        Reporte reporte = new Reporte();
+        reporte.setIdUsuario(usuario.getId());
+        reporte.setSolucionado(EstadoReporte.PENDIENTE);
+        reporteRepo.save(reporte);
+
+        usuario.setReportes(List.of(reporte));
+        usuarioRepo.save(usuario);
+
+        EliminarReporteDto dto = new EliminarReporteDto(
+                reporte.getId().toString(),
+                "claveIncorrecta"
+        );
+
+        // Act + Assert
+        Assertions.assertThrows(PermisoDenegadoException.class, () -> {
+            reporteService.eliminarReporte(dto);
+        });
+    }
+
+    @Test
+    void marcarReporteImportante_deberiaLanzarExcepcion_SiReporteNoExiste() {
+        // Arrange
+        MarcarReporteDto dto = new MarcarReporteDto("507f1f77bcf86cd799439011", new ObjectId().toString());
+
+        // Act + Assert
+        Assertions.assertThrows(ElementoNoEncontradoException.class, () -> {
+            reporteService.marcarReporteImportante(dto);
+        });
+    }
+
+    @Test
+    void marcarComoFavorito_deberiaAgregarReporteAFavoritos() throws Exception {
+        // Arrange
+        Usuario usuario = new Usuario();
+        usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
+        usuario.setListaReportesFavorito(new ArrayList<>());
+        String idUsuario= usuarioRepo.save(usuario).getId().toString();
 
 
+        Reporte reporte = new Reporte();
+        Reporte reporteGuardado = reporteRepo.save(reporte);
+
+        MarcarReporteDto dto = new MarcarReporteDto(idUsuario, reporteGuardado.getId().toString());
+
+        // Act
+        reporteService.marcarReporteFavorito(dto);
+
+        // Assert
+        Usuario actualizado = usuarioRepo.findById(usuario.getId()).orElseThrow();
+        Assertions.assertTrue(!actualizado.getListaReportesFavorito().isEmpty());
+    }
+
+    @Test
+    void marcarComoResuelto_deberiaActualizarEstado() throws Exception {
+        // Arrange
+        Reporte reporte = new Reporte();
+        reporte.setSolucionado(EstadoReporte.NO_RESUELTO);
+        Reporte reporteGuardado= reporteRepo.save(reporte);
+
+        reporteService.marcarReporteResuelto(new MarcarReporteDto(" lol",reporteGuardado.getId().toString()));
+
+        Reporte actualizado = reporteRepo.findById(reporte.getId()).orElseThrow();
+        Assertions.assertEquals(EstadoReporte.RESUELTO, actualizado.getSolucionado());
+    }
 }
