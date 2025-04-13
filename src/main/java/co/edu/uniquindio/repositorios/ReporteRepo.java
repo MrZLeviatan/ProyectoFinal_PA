@@ -25,6 +25,7 @@ public interface ReporteRepo extends MongoRepository<Reporte, ObjectId> {
     // 2. Obtener un reporte específico por su ID
     Optional<Reporte> findById(ObjectId id);
 
+
     // 3. Obtener todos los reportes (aunque MongoRepository ya lo tiene por defecto)
     List<Reporte> findAll();
 }

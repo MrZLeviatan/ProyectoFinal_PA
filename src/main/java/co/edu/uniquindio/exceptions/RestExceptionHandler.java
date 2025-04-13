@@ -125,4 +125,9 @@ public class RestExceptionHandler {
     public ResponseEntity<MensajeDTO<String>> codigoExpiradoHandler(CodigoExpiradoException ex) {
         return ResponseEntity.status(410).body(new MensajeDTO<>(true, ex.getMessage()));
     }
+
+    @ExceptionHandler(UsuarioNoActivadoException.class)
+    public ResponseEntity<MensajeDTO<String>> usuarioNoActivadoExceptionHandler(UsuarioNoActivadoException ex) {
+        return ResponseEntity.status(403).body(new MensajeDTO<>(true, ex.getMessage()));
+    }
 }
