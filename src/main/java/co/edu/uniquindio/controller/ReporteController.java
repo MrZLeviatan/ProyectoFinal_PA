@@ -1,9 +1,13 @@
 package co.edu.uniquindio.controller;
+import co.edu.uniquindio.dto.MensajeDTO;
 import co.edu.uniquindio.dto.reporte.*;
 import co.edu.uniquindio.dto.moderador.GestionReporteDto;
+import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.services.ReporteService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,9 +30,11 @@ public class ReporteController {
      * @param reporte: Objeto con los datos del reporte a registrar.
      * @throws Exception: Si ocurre un error durante el proceso.
      */
-    @PostMapping("/registrar")
-    public void agregarReporte(@RequestBody RegistrarReporteDto reporte) throws Exception {
-        reporteService.agregarReporte(reporte);
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping
+    public ResponseEntity<MensajeDTO<ReporteDTO>> agregarReporte(@RequestBody RegistrarReporteDto reporte) throws Exception {
+        ReporteDTO info = reporteService.agregarReporte(reporte);
+        return ResponseEntity.ok(new MensajeDTO<>(false, info));
     }
 
     /**
@@ -37,9 +43,11 @@ public class ReporteController {
      * @param reporte: Objeto con los datos del reporte a actualizar.
      * @throws Exception: Si ocurre un error durante la actualización.
      */
-    @PutMapping("/actualizar")
-    public void actualizarReporte(@RequestBody EditarReporteDto reporte) throws Exception {
-        reporteService.actualizarReporte(reporte);
+    @SecurityRequirement(name = "bearerAuth")
+    @PutMapping
+    public ResponseEntity<MensajeDTO<ReporteDTO>> actualizarReporte(@RequestBody EditarReporteDto reporte) throws Exception {
+        ReporteDTO info = reporteService.actualizarReporte(reporte);
+        return ResponseEntity.ok(new MensajeDTO<>(false, info));
     }
 
     /**
@@ -48,9 +56,11 @@ public class ReporteController {
      * @param reporteDto: Objeto con la información necesaria para eliminar el reporte.
      * @throws Exception: Si ocurre un error durante la eliminación.
      */
-    @DeleteMapping("/eliminar")
-    public void eliminarReporte(@RequestBody EliminarReporteDto reporteDto) throws Exception {
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping
+    public ResponseEntity<MensajeDTO<String>> eliminarReporte(@RequestBody EliminarReporteDto reporteDto) throws Exception {
         reporteService.eliminarReporte(reporteDto);
+        return ResponseEntity.ok(new MensajeDTO<>(false, "Reporte eliminado exitosamente"));
     }
 
     /**
@@ -60,9 +70,11 @@ public class ReporteController {
      * @return Objeto ReporteDTO con la información del reporte encontrado.
      * @throws Exception: Si no se encuentra el reporte o hay un error.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{id}")
-    public ReporteDTO buscarReporte(@PathVariable String id) throws Exception {
-        return reporteService.buscarReporte(id);
+    public ResponseEntity<MensajeDTO<ReporteDTO>> buscarReporte(@PathVariable String id) throws Exception {
+        ReporteDTO info = reporteService.buscarReporte(id);
+        return ResponseEntity.ok(new MensajeDTO<>(false, info));
     }
 
     /**
@@ -71,9 +83,10 @@ public class ReporteController {
      * @return Lista de objetos ReporteDTO.
      * @throws Exception: Si ocurre un error al obtener los datos.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping
-    public List<ReporteDTO> buscarReportes() throws Exception {
-        return reporteService.buscarReportes();
+    public  ResponseEntity<List<ReporteDTO>> buscarReportes() throws Exception {
+        return ResponseEntity.ok(reporteService.buscarReportes());
     }
 
     /**
@@ -82,9 +95,12 @@ public class ReporteController {
      * @param dto: Datos del reporte a marcar como importante.
      * @throws Exception: Si ocurre un error durante el marcado.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/importante/marcar")
-    public void marcarImportante(@RequestBody MarcarReporteDto dto) throws Exception {
+    public ResponseEntity<MensajeDTO<String>> marcarImportante(@RequestBody MarcarReporteDto dto) throws Exception {
         reporteService.marcarReporteImportante(dto);
+        return ResponseEntity.ok(new MensajeDTO<>(false, "Reporte marcado Importante exitosamente"));
+
     }
 
     /**
@@ -93,9 +109,12 @@ public class ReporteController {
      * @param dto: Datos del reporte al que se le quitará la marca de importante.
      * @throws Exception: Si ocurre un error durante el proceso.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/importante/quitar")
-    public void quitarImportante(@RequestBody MarcarReporteDto dto) throws Exception {
+    public  ResponseEntity<MensajeDTO<String>> quitarImportante(@RequestBody MarcarReporteDto dto) throws Exception {
         reporteService.quitarReporteImportante(dto);
+        return ResponseEntity.ok(new MensajeDTO<>(false, "Reporte quitado marca importante exitosamente"));
+
     }
 
     /**
@@ -104,9 +123,11 @@ public class ReporteController {
      * @param dto: Datos del reporte a marcar como favorito.
      * @throws Exception: Si ocurre un error durante el proceso.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/favorito/marcar")
-    public void marcarFavorito(@RequestBody MarcarReporteDto dto) throws Exception {
+    public  ResponseEntity<MensajeDTO<String>> marcarFavorito(@RequestBody MarcarReporteDto dto) throws Exception {
         reporteService.marcarReporteFavorito(dto);
+        return ResponseEntity.ok(new MensajeDTO<>(false, "Reporte marca favorito exitosamente"));
     }
 
     /**
@@ -115,9 +136,12 @@ public class ReporteController {
      * @param dto: Datos del reporte al que se le quitará la marca de favorito.
      * @throws Exception: Si ocurre un error durante el proceso.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/favorito/quitar")
-    public void quitarFavorito(@RequestBody MarcarReporteDto dto) throws Exception {
+    public ResponseEntity<MensajeDTO<String>> quitarFavorito(@RequestBody MarcarReporteDto dto) throws Exception {
         reporteService.quitarReporteFavorito(dto);
+        return ResponseEntity.ok(new MensajeDTO<>(false, "Reporte quitar marca favorito exitosamente"));
+
     }
 
     /**
@@ -126,6 +150,7 @@ public class ReporteController {
      * @param dto: Datos del reporte a marcar como resuelto.
      * @throws Exception: Si ocurre un error durante el proceso.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/resuelto/marcar")
     public void marcarResuelto(@RequestBody MarcarReporteDto dto) throws Exception {
         reporteService.marcarReporteResuelto(dto);
@@ -137,6 +162,7 @@ public class ReporteController {
      * @param dto: Datos del reporte al que se le quitará la marca de resuelto.
      * @throws Exception: Si ocurre un error durante el proceso.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/resuelto/quitar")
     public void quitarResuelto(@RequestBody MarcarReporteDto dto) throws Exception {
         reporteService.quitarReporteResuelto(dto);
@@ -149,9 +175,10 @@ public class ReporteController {
      * @return Lista de objetos HistorialEstadoDTO con los cambios de estado del reporte.
      * @throws Exception: Si ocurre un error al recuperar el historial.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{id}/historial")
-    public List<HistorialEstadoDTO> obtenerHistorial(@PathVariable String id) throws Exception {
-        return reporteService.obtenerHistorialEstadosReporte(id);
+    public ResponseEntity<List<HistorialEstadoDTO>> obtenerHistorial(@PathVariable String id) throws Exception {
+        return ResponseEntity.ok(reporteService.obtenerHistorialEstadosReporte(id));
     }
 
     /**
@@ -160,8 +187,11 @@ public class ReporteController {
      * @param dto: Datos necesarios para la gestión del reporte.
      * @throws Exception: Si ocurre un error durante la gestión.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/gestionar")
     public void gestionarReporte(@RequestBody GestionReporteDto dto) throws Exception {
         reporteService.gestionarReporte(dto);
     }
 }
+
+

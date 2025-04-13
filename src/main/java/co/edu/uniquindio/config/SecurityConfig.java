@@ -51,6 +51,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE,"/api/categoria").hasAnyAuthority("ROLE_MODERADOR")
                         .requestMatchers(HttpMethod.POST,"/api/categoria").hasAuthority("ROLE_MODERADOR")
                         .requestMatchers(HttpMethod.PUT,"/api/categoria").hasAuthority("ROLE_MODERADOR")
+                        .requestMatchers("api/reporte/**").hasAnyAuthority("ROLE_MODERADOR","ROLE_USUARIO")
+                        .requestMatchers("api/imagenes/**").hasAnyAuthority("ROLE_MODERADOR","ROLE_USUARIO")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new AuthenticationEntryPoint()))
