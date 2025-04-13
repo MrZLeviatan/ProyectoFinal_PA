@@ -1,5 +1,7 @@
 package co.edu.uniquindio.services.impl;
 
+import co.edu.uniquindio.dto.EmailDto;
+import co.edu.uniquindio.dto.MensajeDTO;
 import co.edu.uniquindio.dto.comentario.*;
 import co.edu.uniquindio.dto.modeloDTO.CrearNotificacionDTO;
 import co.edu.uniquindio.dto.modeloDTO.NotificacionDTO;
@@ -11,6 +13,7 @@ import co.edu.uniquindio.model.documentos.Reporte;
 import co.edu.uniquindio.repositorios.ComentarioRepo;
 import co.edu.uniquindio.repositorios.ReporteRepo;
 import co.edu.uniquindio.services.ComentarioService;
+import co.edu.uniquindio.services.EmailService;
 import co.edu.uniquindio.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -34,6 +37,8 @@ public class ComentarioServiceImplement implements ComentarioService {
     private final WebSocketNotificationService socketNotificationService;
     private final NotificacionServiceImplement notificacionServiceImplement;
     private final UsuarioService usuarioService;
+    private final EmailService emailService;
+
     @Transactional
     @Override
     public void agregarComentario(RegistrarComentarioDto comentario) throws Exception {
@@ -64,6 +69,16 @@ public class ComentarioServiceImplement implements ComentarioService {
                 remitente.email()
         );
         notificacionServiceImplement.enviarNotificacion(crearNotificacionDTO);
+
+
+        //envio de mensaje con lo que dice el comentario
+        EmailDto emailDto = new EmailDto(
+          titulo,
+          comentario.contenido(), //agregamos el contenido
+          destinatario.email()
+        );
+
+        emailService.enviarCorreo(emailDto);
     }
 
     @Override

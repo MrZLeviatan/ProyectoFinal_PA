@@ -87,7 +87,7 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<MensajeDTO<String>> crearUsuario(@Valid @RequestBody RegistrarUsuarioDto usuarioDTO ) throws Exception{
         usuarioService.crearUsuario(usuarioDTO);
-        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Usuario creado"));
+        return ResponseEntity.status(200).body(new MensajeDTO<>(false, "Usuario creado"));
     }
 
     /**
@@ -100,7 +100,7 @@ public class UsuarioController {
     @PostMapping("/codigoVerificacion/{email}")
     public ResponseEntity<MensajeDTO<String>> solicitarRestablecer(@PathVariable String email) throws Exception{
         usuarioService.solicitarRestablecer(email);
-        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Restablecer"));
+        return ResponseEntity.status(200).body(new MensajeDTO<>(false, "Restablecer"));
     }
 
     /**
@@ -113,7 +113,7 @@ public class UsuarioController {
     @PutMapping("/password")
     public ResponseEntity<MensajeDTO<String>> restablecerPassword(@Valid @RequestBody RestablecerPasswordDto restablecerPasswordDto ) throws Exception{
         usuarioService.restablecerPassword(restablecerPasswordDto);
-        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Password restablecida"));
+        return ResponseEntity.status(200).body(new MensajeDTO<>(false, "Password restablecida"));
     }
 
     /**
@@ -126,7 +126,7 @@ public class UsuarioController {
     @PutMapping("/estado")
     public ResponseEntity<MensajeDTO<String>> autentificarCuenta(@Valid @RequestBody ActivarCuentaDto activarCuentaDto ) throws Exception{
         usuarioService.activarCuenta(activarCuentaDto);
-        return ResponseEntity.status(200).body(new MensajeDTO<>(true, "Cuenta activada"));
+        return ResponseEntity.status(200).body(new MensajeDTO<>(false, "Cuenta activada"));
     }
 }
 

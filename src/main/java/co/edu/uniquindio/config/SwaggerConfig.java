@@ -7,10 +7,14 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @SecurityScheme(
-        name = "cookieAuth",
-        type = SecuritySchemeType.APIKEY, // Usamos API Key porque las cookies funcionan de forma similar
-        in = SecuritySchemeIn.COOKIE, // Especificamos que la autenticación está en una cookie
-        paramName = "SESSIONID" // Nombre de la cookie que almacena el token de sesión
+        name = "bearerAuth",
+        scheme = "bearer",
+        bearerFormat = "JWT",
+        type = SecuritySchemeType.HTTP,
+        in = SecuritySchemeIn.HEADER
 )
 public class SwaggerConfig {
+
 }
+
+

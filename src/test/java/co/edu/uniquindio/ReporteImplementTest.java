@@ -257,9 +257,10 @@ public class ReporteImplementTest {
     }
 
     @Test
+    @WithMockUser(username = "507f1f77bcf86cd799439011")
     void marcarComoResuelto_deberiaActualizarEstado() throws Exception {
         Usuario usuario = new Usuario();
-        usuario.setId(new ObjectId());
+        usuario.setId(new ObjectId("507f1f77bcf86cd799439011"));
         usuario.setNombre("Usuario");
         usuario.setEmail("andrey3681.ay@gmail.com");
         usuario.setReportes(new ArrayList<>());

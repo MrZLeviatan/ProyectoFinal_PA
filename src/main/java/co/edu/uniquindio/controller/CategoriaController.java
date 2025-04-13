@@ -17,7 +17,7 @@ import java.util.List;
 public class CategoriaController {
 
     // Servicio que contiene la lógica de negocio para operar con categorías.
-    CategoriaService categoriaService;
+    private final CategoriaService categoriaService;
 
     /**
      * Endpoint para crear una nueva categoría en el sistema.

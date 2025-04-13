@@ -15,6 +15,7 @@ import co.edu.uniquindio.model.documentos.Notificacion;
 import co.edu.uniquindio.model.documentos.Reporte;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoReporte;
+import co.edu.uniquindio.model.enums.EstadoSeveridad;
 import co.edu.uniquindio.model.enums.Rol;
 import co.edu.uniquindio.model.vo.HistorialEstado;
 import co.edu.uniquindio.model.vo.Ubicacion;
@@ -64,7 +65,7 @@ public class ReporteImplement implements ReporteService {
             throw new PermisoDenegadoException("no puedes crear reportes por otros usuarios");
         }
         Reporte reporte = reporteMapper.toReporte(dto);
-        agregarHistorial(reporte,EstadoReporte.PENDIENTE,"acaba de ser creado");
+        agregarHistorial(reporte,EstadoReporte.PENDIENTE,"acaba de ser creado",usuario);
         Reporte nuevoReporte = reporteRepo.save(reporte);
         usuario.getReportes().add(nuevoReporte);
         usuarioRepo.save(usuario);
@@ -146,7 +147,7 @@ public class ReporteImplement implements ReporteService {
             throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
         }
         usuario.getReportes().removeIf(r -> r.getId().equals(reporte.getId()));
-        agregarHistorial(reporte,EstadoReporte.ELIMINADO,"fue eliminado por el usuario"+ idUsuario);
+        agregarHistorial(reporte,EstadoReporte.ELIMINADO,"fue eliminado por el usuario"+ idUsuario,usuario);
         usuarioRepo.save(usuario); // guardamos que uno de los reportes esta eliminado
         reporteRepo.save(reporte); //lo guardamos como eliminado
 
@@ -192,6 +193,13 @@ public class ReporteImplement implements ReporteService {
     public void marcarReporteImportante(MarcarReporteDto reporteDto) throws Exception {
         Reporte reporte = obtenerReporte(reporteDto.idReporte());
         reporte.setNumeroImportancia(reporte.getNumeroImportancia() + 1);
+        if(reporte.getNumeroImportancia()>= 50){
+            reporte.setSeveridad(EstadoSeveridad.MEDIA);
+        }
+        if(reporte.getNumeroImportancia()>= 100){
+            reporte.setSeveridad(EstadoSeveridad.ALTA);
+        }
+
         reporteRepo.save(reporte);
 
         String mensaje = "Reporte marcado como importante exitosamente";
@@ -211,6 +219,12 @@ public class ReporteImplement implements ReporteService {
     public void quitarReporteImportante(MarcarReporteDto reporteDto) throws Exception {
         Reporte reporte = obtenerReporte(reporteDto.idReporte());
         reporte.setNumeroImportancia(reporte.getNumeroImportancia() - 1);
+        if(reporte.getNumeroImportancia()< 50){
+            reporte.setSeveridad(EstadoSeveridad.BAJA);
+        }
+        if(reporte.getNumeroImportancia()< 100){
+            reporte.setSeveridad(EstadoSeveridad.MEDIA);
+        }
         reporteRepo.save(reporte);
         String mensaje = "Reporte quitado como importante exxitosamente";
         String titulo = "Reporte quitado como importante";
@@ -265,9 +279,23 @@ public class ReporteImplement implements ReporteService {
      */
     @Override
     public void marcarReporteResuelto(MarcarReporteDto reporteDto) throws Exception {
+        String idUsuario= obtenerIdToken();
+        Usuario usuario = obtenerPorId(reporteDto.idUsuario());
         Reporte reporte = obtenerReporte(reporteDto.idReporte());
+
+        if(usuario.getRol()==Rol.MODERADOR){
+            cambiarEstadoResuelto(usuario, reporte);
+        }
+
+        if(!usuario.getId().toString().equals(idUsuario)){
+            throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
+        }
+        cambiarEstadoResuelto(usuario, reporte);
+    }
+
+    private void cambiarEstadoResuelto(Usuario usuario, Reporte reporte) {
         reporte.setSolucionado(EstadoReporte.RESUELTO);
-        agregarHistorial(reporte,EstadoReporte.RESUELTO,"");
+        agregarHistorial(reporte,EstadoReporte.RESUELTO,"",usuario);
         reporteRepo.save(reporte);
         String mensaje = "Reporte marcado como resuelto";
         String titulo = "Resolver reporte";
@@ -284,9 +312,22 @@ public class ReporteImplement implements ReporteService {
      */
     @Override
     public void quitarReporteResuelto(MarcarReporteDto reporteDto) throws Exception {
+        String idUsuario= obtenerIdToken();
+        Usuario usuario = obtenerPorId(reporteDto.idUsuario());
         Reporte reporte = obtenerReporte(reporteDto.idReporte());
+
+        if(usuario.getRol()==Rol.MODERADOR){
+            cambiarEstadoNoResueto(usuario,reporte);
+        }
+        if(!usuario.getId().toString().equals(idUsuario)){
+            throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
+        }
+        cambiarEstadoNoResueto(usuario,reporte);
+    }
+
+    private void cambiarEstadoNoResueto(Usuario usuario, Reporte reporte) {
         reporte.setSolucionado(EstadoReporte.NO_RESUELTO);
-        agregarHistorial(reporte,EstadoReporte.NO_RESUELTO,"");
+        agregarHistorial(reporte,EstadoReporte.NO_RESUELTO,"",usuario);
         reporteRepo.save(reporte);
         String mensaje = "Reporte marcado como no resuelto";
         String titulo = "Resolver reporte";
@@ -328,7 +369,7 @@ public class ReporteImplement implements ReporteService {
             throw new PermisoDenegadoException("eso no se deberia de gestionar en este metodo");
         }
         reporte.setEstadoReporte(dto.estadoActual());
-        agregarHistorial(reporte,dto.estadoActual(),"");
+        agregarHistorial(reporte,dto.estadoActual(),"",usuario);
         reporteRepo.save(reporte);
 
         String mensaje = "El nuevo estado del reporte es "+ dto.estadoActual() + dto.motivo();
@@ -376,11 +417,12 @@ public class ReporteImplement implements ReporteService {
         }
     }
 
-    private void agregarHistorial(Reporte reporte, EstadoReporte estado, String motivo) {
+    private void agregarHistorial(Reporte reporte, EstadoReporte estado, String motivo,Usuario usuario) {
         HistorialEstado historial = new HistorialEstado();
         historial.setEstadoActual(estado);
         historial.setFecha(LocalDateTime.now());
         historial.setMotivoCambio(motivo);
+        historial.setUsuario(usuario);
 
         if (reporte.getHistorial() == null) {
             reporte.setHistorial(new ArrayList<>());
