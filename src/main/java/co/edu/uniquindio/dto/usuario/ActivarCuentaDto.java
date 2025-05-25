@@ -12,6 +12,6 @@ import jakarta.validation.constraints.NotNull;
  */
 public record ActivarCuentaDto(
         @NotBlank String email,
-        @NotNull CodigoValidacionDTO codigoActivacion
+        @NotNull String codigoActivacion
 ) {
 }

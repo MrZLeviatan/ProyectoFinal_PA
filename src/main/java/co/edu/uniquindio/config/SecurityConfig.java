@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/usuario").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/usuario/reportes").hasAnyAuthority("ROLE_USUARIO")
                         .requestMatchers("/api/usuario/estado").permitAll()
                         .requestMatchers("/api/usuario/codigoVerificacion/{email}").permitAll()
                         .requestMatchers("/api/usuario/password").permitAll()
@@ -51,8 +52,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE,"/api/categoria").hasAnyAuthority("ROLE_MODERADOR")
                         .requestMatchers(HttpMethod.POST,"/api/categoria").hasAuthority("ROLE_MODERADOR")
                         .requestMatchers(HttpMethod.PUT,"/api/categoria").hasAuthority("ROLE_MODERADOR")
+                        .requestMatchers("/api/enums").permitAll()
+                        .requestMatchers("/api/enums/ciudades").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "api/categoria").permitAll()
+                        /*
                         .requestMatchers("api/reporte/**").hasAnyAuthority("ROLE_MODERADOR","ROLE_USUARIO")
-                        .requestMatchers("api/imagenes/**").hasAnyAuthority("ROLE_MODERADOR","ROLE_USUARIO")
+
+                         */
+                        .requestMatchers("api/reportes/").permitAll()
+                        .requestMatchers("api/reportes/ubicacion").permitAll()
+                        .requestMatchers("api/usuario/reportes").permitAll()
+                        .requestMatchers(HttpMethod.POST,"api/imagenes/").permitAll()
+                        /*.requestMatchers("api/imagenes/**").hasAnyAuthority("ROLE_MODERADOR","ROLE_USUARIO")*/
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new AuthenticationEntryPoint()))
@@ -63,24 +74,19 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        // Configura CORS (Cross-Origin Resource Sharing) para permitir solicitudes desde otros orígenes
-
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
-        // Permite solicitudes desde cualquier origen (en producción es mejor restringir esto)
+
+        // Especifica el origen explícitamente
+        config.setAllowedOrigins(List.of("http://localhost:4200"));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // Métodos HTTP permitidos
-
         config.setAllowedHeaders(List.of("*"));
-        // Permite cualquier encabezado
 
+        // Esto solo funciona si NO usas "*"
         config.setAllowCredentials(true);
-        // Permite el envío de cookies o tokens en las solicitudes
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        // Aplica esta configuración a todas las rutas
 
         return source;
     }

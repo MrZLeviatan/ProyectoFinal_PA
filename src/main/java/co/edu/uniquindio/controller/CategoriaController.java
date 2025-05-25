@@ -84,7 +84,8 @@ public class CategoriaController {
      */
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
-    public ResponseEntity<List<CategoriaDTO>> listarCategorias() throws Exception {
-        return ResponseEntity.ok(categoriaService.listarCategorias());
+    public ResponseEntity<MensajeDTO<List<CategoriaDTO>>> listarCategorias() throws Exception {
+        List<CategoriaDTO> list= categoriaService.listarCategorias();
+        return ResponseEntity.status(200).body(new MensajeDTO<>(false,  list));
     }
 }

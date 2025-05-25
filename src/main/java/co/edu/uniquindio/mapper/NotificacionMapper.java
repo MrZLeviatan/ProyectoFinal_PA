@@ -1,6 +1,7 @@
 package co.edu.uniquindio.mapper;
 
 import co.edu.uniquindio.dto.modeloDTO.CrearNotificacionDTO;
+import co.edu.uniquindio.dto.modeloDTO.MostrarNotificacionDTO;
 import co.edu.uniquindio.dto.modeloDTO.NotificacionDTOM;
 import co.edu.uniquindio.model.documentos.Notificacion;
 import org.mapstruct.Mapper;
@@ -30,6 +31,8 @@ public interface NotificacionMapper {
      * @return La lista de objetos `NotificacionDTOM` correspondientes.
      */
     List<NotificacionDTOM> toNotificacionDTOList(List<Notificacion> notificaciones);
+
+    List<MostrarNotificacionDTO> toMostrarNotificacionDTOList(List<Notificacion> notificaciones);
 
 
     @Mapping(target = "id",ignore = true)

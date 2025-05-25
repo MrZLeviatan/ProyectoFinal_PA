@@ -3,12 +3,15 @@ import co.edu.uniquindio.constants.MensajesError;
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.EmailDto;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
+import co.edu.uniquindio.dto.reporte.ReporteDTO;
 import co.edu.uniquindio.dto.usuario.ActivarCuentaDto;
 import co.edu.uniquindio.dto.usuario.EditarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.RegistrarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.exceptions.*;
+import co.edu.uniquindio.mapper.ReporteMapper;
 import co.edu.uniquindio.mapper.UsuarioMapper;
+import co.edu.uniquindio.model.documentos.Reporte;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
 import co.edu.uniquindio.model.enums.Rol;
@@ -23,6 +26,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -34,6 +39,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioRepo usuarioRepo;
     private final UsuarioMapper usuarioMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ReporteMapper reporteMapper;
 
     @Override
     public void eliminarUsuario(EliminarCuentaDto cuentaDto) throws ElementoNoEncontradoException,PermisoDenegadoException,CredencialesInvalidasException{
@@ -107,6 +113,13 @@ public class UsuarioServiceImpl implements UsuarioService {
         //el usuarioDto se transforma en un usuario nuevo
         Usuario usuario = usuarioMapper.toDocument(usuarioDTO);
         usuario.setPassword(passwordEncoder.encode(usuarioDTO.password()));
+
+        CodigoValidacion codigoValidacion = new CodigoValidacion();
+        codigoValidacion.setCodigo(generarCodigoActivacion());
+        codigoValidacion.setHoraCreacion(LocalDateTime.now());
+
+        usuario.setCodigoValidacion(codigoValidacion);
+
         //guardamos el usuario en el repositorio
         usuarioRepo.save(usuario);
     }
@@ -170,12 +183,20 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         // Verificamos si el código es correcto
-        if (!codigoValidacion.getCodigo().equals(activarCuentaDto.codigoActivacion().codigo())){
+        if (!codigoValidacion.getCodigo().equals(activarCuentaDto.codigoActivacion())){
             throw new CodigoIncorrectoException("El código de confirmación no es correcto");
         }
 
         // Eliminamos el código de validación del usuario
         eliminarCodigo(usuario);
+    }
+
+    @Override
+    public List<ReporteDTO> obtenerReportesUsuario(String id) {
+        Usuario usuario= obtenerPorId(id);
+        List<Reporte> reportes= usuario.getReportes();
+        List<ReporteDTO> reportesDTO= reporteMapper.toReporteDTOList(reportes);
+        return reportesDTO;
     }
 
     private void eliminarCodigo(Usuario usuario) {

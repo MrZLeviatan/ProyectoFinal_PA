@@ -1,7 +1,7 @@
 package co.edu.uniquindio.controller;
 import co.edu.uniquindio.dto.MensajeDTO;
 import co.edu.uniquindio.dto.reporte.*;
-import co.edu.uniquindio.dto.moderador.GestionReporteDto;
+        import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.services.ReporteService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -10,13 +10,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+        import java.util.List;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("api/reportes")
 @RequiredArgsConstructor
+
 // Controlador encargado de gestionar los reportes dentro del sistema.
 // Incluye operaciones para registrar, actualizar, eliminar, buscar y marcar reportes con diferentes estados o etiquetas.
 public class ReporteController {
@@ -70,7 +75,7 @@ public class ReporteController {
      * @return Objeto ReporteDTO con la información del reporte encontrado.
      * @throws Exception: Si no se encuentra el reporte o hay un error.
      */
-    @SecurityRequirement(name = "bearerAuth")
+//    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{id}")
     public ResponseEntity<MensajeDTO<ReporteDTO>> buscarReporte(@PathVariable String id) throws Exception {
         ReporteDTO info = reporteService.buscarReporte(id);
@@ -192,6 +197,27 @@ public class ReporteController {
     public void gestionarReporte(@RequestBody GestionReporteDto dto) throws Exception {
         reporteService.gestionarReporte(dto);
     }
+
+
+    /**
+     * Endpoint para obtener reportes dentro de un radio específico de una ubicación.
+     *
+     * @param ubicacionDTO: Objeto con la ubicación y el radio de búsqueda.
+     * @return Lista de reportes encontrados dentro del radio especificado.
+     * @throws Exception: Si ocurre un error durante la búsqueda.
+     */
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/ubicacion")
+    public ResponseEntity<MensajeDTO<List<ReporteDTO>>> obtenerReportesPorUbicacion(@RequestBody UbicacionDTO ubicacionDTO) throws Exception {
+        log.info(ubicacionDTO.toString());
+        List<ReporteDTO> reportes = reporteService.obtenerReportesUbicacion(ubicacionDTO);
+        log.info("Reportes obtenidos por ubicación: {}", reportes.toString());
+
+        return ResponseEntity.ok(new MensajeDTO<>(false, reportes));
+    }
+
+
+
 }
 
 

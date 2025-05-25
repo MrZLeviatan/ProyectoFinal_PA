@@ -14,7 +14,6 @@ import org.hibernate.validator.constraints.Length;
  * @param ciudad             Ciudad de residencia.
  * @param email              Correo electrónico del usuario (máximo 50 caracteres).
  * @param password           Contraseña segura (entre 7 y 20 caracteres).
- * @param codigoValidacionDTO Código generado para validar el registro del usuario.
  */
 public record RegistrarUsuarioDto(
 
@@ -22,8 +21,7 @@ public record RegistrarUsuarioDto(
         @NotBlank @Length(max = 100) String direccion,
         @NotNull Ciudad ciudad,
         @NotBlank @Length(max = 50) @Email String email,
-        @NotBlank @Length(min = 7, max = 20) String password,
-        @NotNull CodigoValidacionDTO codigoValidacionDTO
+        @NotBlank @Length(min = 7, max = 20) String password
 
 ) {
 }

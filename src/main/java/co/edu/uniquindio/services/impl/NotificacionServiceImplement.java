@@ -2,6 +2,7 @@ package co.edu.uniquindio.services.impl;
 
 import co.edu.uniquindio.constants.MensajesError;
 import co.edu.uniquindio.dto.modeloDTO.CrearNotificacionDTO;
+import co.edu.uniquindio.dto.modeloDTO.MostrarNotificacionDTO;
 import co.edu.uniquindio.dto.modeloDTO.NotificacionDTOM;
 import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.mapper.NotificacionMapper;
@@ -59,9 +60,9 @@ public class NotificacionServiceImplement implements NotificacionService {
      * @return Una lista vacía de notificaciones (por implementar).
      */
     @Override
-    public List<NotificacionDTOM> leerNotificaciones(String idUsuario) {
+    public List<MostrarNotificacionDTO> leerNotificaciones(String idUsuario) {
         Usuario usuario= obtenerUsuario(idUsuario);
-        return notificacionMapper.toNotificacionDTOList(usuario.getNotificaciones());
+        return notificacionMapper.toMostrarNotificacionDTOList(usuario.getNotificaciones());
     }
 
 
@@ -100,7 +101,16 @@ public class NotificacionServiceImplement implements NotificacionService {
         if (notificacionOptional.isEmpty()) {
             throw new  ElementoNoEncontradoException(MensajesError.NOTIFICACION_NO_ENCONTRADO);
         }
+
+        Usuario usuario= obtenerUsuarioPorEmail(notificacionOptional.get().getDestinatario());
+        usuario.getNotificaciones().stream().filter(notificacion -> notificacion.getId().equals(idNotificacion));
+
         notificacionRepo.delete(notificacionOptional.get());
+        usuarioRepo.save(usuario);
+    }
+
+    private Usuario obtenerUsuarioPorEmail(String destinatario) {
+        return usuarioRepo.findByEmail(destinatario).get();
     }
 
 
@@ -111,4 +121,6 @@ public class NotificacionServiceImplement implements NotificacionService {
         return usuarioRepo.findById(new ObjectId(id))
                 .orElseThrow(() -> new ElementoNoEncontradoException(MensajesError.USARIO_NO_ENCONTRADO));
     }
+
+
 }

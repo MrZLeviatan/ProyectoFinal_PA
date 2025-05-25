@@ -18,7 +18,7 @@ public interface UsuarioMapper {
     @Mapping(target = "notificaciones", expression = "java(new java.util.ArrayList<>())")
     @Mapping(target = "reportes", expression = "java(new java.util.ArrayList<>())")
     @Mapping(target = "listaReportesFavorito", expression = "java(new java.util.ArrayList<>())") // inicializamos las listas
-    @Mapping(target = "codigoValidacion", source = "codigoValidacionDTO") //le decimos que tranforme el dto con un metodo anteriormente creado
+     //le decimos que tranforme el dto con un metodo anteriormente creado
     @Mapping(target = "id", ignore = true) //ignoamos la id la crea mongo al guardarse
     Usuario toDocument(RegistrarUsuarioDto usuarioDTO);
 

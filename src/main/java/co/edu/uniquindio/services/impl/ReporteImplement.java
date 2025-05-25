@@ -3,7 +3,6 @@ package co.edu.uniquindio.services.impl;
 import co.edu.uniquindio.constants.MensajesError;
 import co.edu.uniquindio.dto.modeloDTO.CrearNotificacionDTO;
 import co.edu.uniquindio.dto.modeloDTO.NotificacionDTO;
-import co.edu.uniquindio.dto.modeloDTO.NotificacionDTOM;
 import co.edu.uniquindio.dto.moderador.GestionReporteDto;
 import co.edu.uniquindio.dto.reporte.*;
 
@@ -11,7 +10,6 @@ import co.edu.uniquindio.exceptions.ElementoNoEncontradoException;
 import co.edu.uniquindio.exceptions.PermisoDenegadoException;
 import co.edu.uniquindio.mapper.ReporteMapper;
 import co.edu.uniquindio.model.documentos.Categoria;
-import co.edu.uniquindio.model.documentos.Notificacion;
 import co.edu.uniquindio.model.documentos.Reporte;
 import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoReporte;
@@ -23,9 +21,11 @@ import co.edu.uniquindio.repositorios.CategoriaRepo;
 import co.edu.uniquindio.repositorios.ReporteRepo;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.ReporteService;
+import org.springframework.data.geo.Point;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -138,15 +139,20 @@ public class ReporteImplement implements ReporteService {
     @Override
     public void eliminarReporte(EliminarReporteDto reporteDto) throws ElementoNoEncontradoException {
         String idUsuario = obtenerIdToken();
+        Logger.getAnonymousLogger().info("si paso del tocken");
         Reporte reporte = obtenerReporte(reporteDto.idReporte());
+        Logger.getAnonymousLogger().info("si paso del reportid");
         if(!reporte.getIdUsuario().toString().equals(idUsuario)){
             throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
         }
+        Logger.getAnonymousLogger().info("si paso la verificacion de usuario");
         Usuario usuario = obtenerPorId(reporte.getIdUsuario().toString());
         if(!passwordEncoder.matches(reporteDto.password(), usuario.getPassword())){
             throw new PermisoDenegadoException(MensajesError.PERMISO_DENEGADO);
         }
+        Logger.getAnonymousLogger().info("si paso del obtener usuario");
         usuario.getReportes().removeIf(r -> r.getId().equals(reporte.getId()));
+        Logger.getAnonymousLogger().info("si paso de remover el reporte del usuario");
         agregarHistorial(reporte,EstadoReporte.ELIMINADO,"fue eliminado por el usuario"+ idUsuario,usuario);
         usuarioRepo.save(usuario); // guardamos que uno de los reportes esta eliminado
         reporteRepo.save(reporte); //lo guardamos como eliminado
@@ -434,5 +440,26 @@ public class ReporteImplement implements ReporteService {
     private String obtenerIdToken() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return user.getUsername();
+    }
+
+
+    /**
+     * Método para obtener reportes dentro de un radio específico de una ubicación.
+     *
+     * @param ubicacionDTO Objeto DTO con la ubicación y el radio de búsqueda.
+     * @return Lista de reportes encontrados dentro del radio especificado.
+     */
+    @Override
+    public List<ReporteDTO> obtenerReportesUbicacion(UbicacionDTO ubicacionDTO) {
+
+        List<Reporte> reportes = reporteRepo.findByUbicacionWithinRadius(ubicacionDTO.latitud(), ubicacionDTO.altitud(), ubicacionDTO.radio());
+
+        List<ReporteDTO> reporteDTOS = reporteMapper.toReporteDTOList(reportes);
+        Reporte reporte= obtenerReporte("68322a575e54e0673ab3a3a3");
+        ReporteDTO reporteDTO = reporteMapper.toReporteDTO(reporte);
+        reporteDTOS.add(reporteDTO);
+
+
+        return reporteDTOS;
     }
 }

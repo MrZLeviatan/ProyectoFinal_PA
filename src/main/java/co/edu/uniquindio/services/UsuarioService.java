@@ -2,11 +2,14 @@ package co.edu.uniquindio.services;
 
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
+import co.edu.uniquindio.dto.reporte.ReporteDTO;
 import co.edu.uniquindio.dto.usuario.EditarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.UsuarioDTO;
 import co.edu.uniquindio.dto.usuario.*;
 import jakarta.validation.Valid;
 import co.edu.uniquindio.exceptions.ElementoRepetidoException;
+
+import java.util.List;
 
 // Interfaz que define el contrato para las operaciones relacionadas con usuarios.
 public interface UsuarioService {
@@ -68,4 +71,6 @@ public interface UsuarioService {
      * @throws Exception: Si el código es inválido o ocurre un error durante la activación.
      */
     void activarCuenta(@Valid ActivarCuentaDto activarCuentaDto) throws Exception;
+
+    List<ReporteDTO> obtenerReportesUsuario(@Valid String id);
 }

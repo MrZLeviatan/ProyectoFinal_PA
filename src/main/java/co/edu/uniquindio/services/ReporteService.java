@@ -105,6 +105,7 @@ public interface ReporteService {
      */
     void gestionarReporte(GestionReporteDto reporte) throws Exception;
 
+    List<ReporteDTO> obtenerReportesUbicacion(UbicacionDTO ubicacionDTO);
 }
 
 

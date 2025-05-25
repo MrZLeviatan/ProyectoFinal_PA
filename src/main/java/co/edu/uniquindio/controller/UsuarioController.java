@@ -3,6 +3,7 @@ package co.edu.uniquindio.controller;
 import co.edu.uniquindio.dto.EliminarCuentaDto;
 import co.edu.uniquindio.dto.MensajeDTO;
 import co.edu.uniquindio.dto.RestablecerPasswordDto;
+import co.edu.uniquindio.dto.reporte.ReporteDTO;
 import co.edu.uniquindio.dto.usuario.ActivarCuentaDto;
 import co.edu.uniquindio.dto.usuario.EditarUsuarioDto;
 import co.edu.uniquindio.dto.usuario.RegistrarUsuarioDto;
@@ -13,6 +14,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -128,6 +131,17 @@ public class UsuarioController {
         usuarioService.activarCuenta(activarCuentaDto);
         return ResponseEntity.status(200).body(new MensajeDTO<>(false, "Cuenta activada"));
     }
+
+    @GetMapping("/reportes/{id}")
+    public ResponseEntity<MensajeDTO<List<ReporteDTO>>> obtenerReportesUsuario( @PathVariable String id) throws Exception{
+        List<ReporteDTO> reporteDTOList= usuarioService.obtenerReportesUsuario(id);
+        return ResponseEntity.status(200).body(new MensajeDTO<>(false,reporteDTOList));
+    }
+
+
+
+
+
 }
 
 

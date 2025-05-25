@@ -11,6 +11,7 @@ import co.edu.uniquindio.model.documentos.Usuario;
 import co.edu.uniquindio.model.enums.EstadoUsuario;
 import co.edu.uniquindio.repositorios.UsuarioRepo;
 import co.edu.uniquindio.services.AutentificacionService;
+import co.edu.uniquindio.services.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class AuntentificacionImplement implements AutentificacionService {
     private final UsuarioRepo usuarioRepo;
     private final JWTUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     /**
      * Inicia sesión verificando las credenciales del usuario y generando un token JWT si son válidas.
@@ -67,7 +69,8 @@ public class AuntentificacionImplement implements AutentificacionService {
         return Map.of(
                 "email", usuario.getEmail(),
                 "nombre", usuario.getNombre(),
-                "rol", "ROLE_" + usuario.getRol().name()
+                "rol", "ROLE_" + usuario.getRol().name(),
+                "estado", "ESTADE_"+ usuario.getEstadoUsuario().name()
         );
     }
 }

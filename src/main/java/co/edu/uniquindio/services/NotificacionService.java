@@ -1,6 +1,7 @@
 package co.edu.uniquindio.services;
 
 import co.edu.uniquindio.dto.modeloDTO.CrearNotificacionDTO;
+import co.edu.uniquindio.dto.modeloDTO.MostrarNotificacionDTO;
 import co.edu.uniquindio.dto.modeloDTO.NotificacionDTOM;
 
 import java.util.List;
@@ -16,10 +17,11 @@ public interface NotificacionService {
 
     /**
      * Recupera la lista de notificaciones recibidas por un usuario.
+     *
      * @param idUsuario: Identificador único del usuario.
      * @return Lista de objetos NotificacionDTOM correspondientes a las notificaciones del usuario.
      */
-    List<NotificacionDTOM> leerNotificaciones(String idUsuario);
+    List<MostrarNotificacionDTO> leerNotificaciones(String idUsuario);
 
     /**
      * Busca una notificación en el sistema usando su identificador único.

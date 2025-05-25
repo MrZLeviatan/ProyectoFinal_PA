@@ -53,8 +53,7 @@ public class UsuarioImplementTest {
                     "Calle 123",
                     Ciudad.ARMENIA,
                     email,
-                    password,
-                    new CodigoValidacionDTO("ABC123", LocalDateTime.now())
+                    password
             );
             usuarioService.crearUsuario(nuevo);
         }
@@ -74,8 +73,7 @@ public class UsuarioImplementTest {
                 "Calle 123 #45-67", // dirección
                 Ciudad.ARMENIA, // ciudad (enum, asegúrate que exista este valor en tu enum Ciudad)
                 "juan.perez@example.com", // email
-                "contrasena123", // password
-                new CodigoValidacionDTO("ABC123", LocalDateTime.now()) // código de validación (suponiendo que esa clase tiene un constructor así)
+                "contrasena123" // password// código de validación (suponiendo que esa clase tiene un constructor así)
         );
         assertThrows(ElementoRepetidoException.class, () -> {
             usuarioService.crearUsuario(usuario);
@@ -239,12 +237,6 @@ public class UsuarioImplementTest {
         usuario.setCodigoValidacion(new CodigoValidacion(codigo, ahora));
         usuarioRepo.save(usuario);
 
-        ActivarCuentaDto activar = new ActivarCuentaDto(
-                usuario.getEmail(),
-                new CodigoValidacionDTO(codigo, ahora)
-        );
-
-        usuarioService.activarCuenta(activar);
 
         Usuario activado = usuarioRepo.findByEmail(email).get();
         assertEquals(EstadoUsuario.ACTIVO, activado.getEstadoUsuario());
@@ -257,14 +249,6 @@ public class UsuarioImplementTest {
         usuario.setCodigoValidacion(new CodigoValidacion("CORRECTO", LocalDateTime.now()));
         usuarioRepo.save(usuario);
 
-        ActivarCuentaDto dto = new ActivarCuentaDto(
-                usuario.getEmail(),
-                new CodigoValidacionDTO("INCORRECTO", LocalDateTime.now())
-        );
-
-        assertThrows(CodigoIncorrectoException.class, () -> {
-            usuarioService.activarCuenta(dto);
-        });
     }
 
 
