@@ -59,7 +59,3 @@ dependencies {
     implementation("com.cloudinary:cloudinary-http45:1.39.0")
 
 }
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
